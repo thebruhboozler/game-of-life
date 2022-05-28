@@ -164,8 +164,11 @@ void handleClicks(int x ,int y){
     int cx = (int) tcx;
     int cy = (int) tcy;
 
-    int sx = cameraX + cx;
-    int sy = cameraY + cy;
+    int shiftX = (-cameraX)%squareSize;
+    int shiftY = (-cameraY)%squareSize;
+
+    int sx = cameraX + cx + shiftX;
+    int sy = cameraY + cy + shiftY;
 
     int squareX = (int)(roundUp(sx,squareSize) - squareSize) / squareSize + 1;
     int squareY = (int)(roundUp(sy,squareSize) - squareSize) / squareSize + 2;

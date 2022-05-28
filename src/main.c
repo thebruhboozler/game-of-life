@@ -2,6 +2,7 @@
 #include "controls.h"
 #include "misc.h"
 #include "game.h"
+#include "include/gtk.h"
 
 
 #define null NULL
@@ -25,6 +26,8 @@ int main(int argc,char** argv){
 
     glutInit(&argc,argv);   // glut used for text output
     
+    gtk_init(&argc,&argv);
+
     menuInit(); // intilise the menu
 
     window = glfwCreateWindow(windowW, windowH, "GameOfLife", null, null);

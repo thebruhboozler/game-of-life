@@ -5,10 +5,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+
 extern node* head;
 extern bool paused;
 
 int numOfTurns = 0;
+
 
 void playTurn();
 void updateChunk(node* chunk);
