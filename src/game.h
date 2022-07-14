@@ -5,7 +5,6 @@
 
 void playTurn();
 void toggleCell(chunk* c,int index);
-void test();
 
 
 #endif
