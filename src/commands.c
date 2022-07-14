@@ -1,19 +1,23 @@
 #include "commands.h"
 #include "chunkSys.h"
 #include "gtk/gtk.h"
-#include "pthread.h"
 
 #include <stdlib.h>
 
 
 extern node* head;
 extern int chunkNum;
+extern int argc;
+extern char** argv;
+extern cordentry *hashTable[hashSize];
+
 
 void import(void);
 void exportf(void);
 void clearAll(void);
 void teleport(void);
 void help(void);
+void popUp (GtkWidget *wid, GtkWidget *win);
 
 
 void import(void){
@@ -23,7 +27,7 @@ void exportf(void){
 
 };
 
-void clearAll(void){ 
+void clearAll(void){
 
     GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
 
@@ -48,6 +52,24 @@ void clearAll(void){
     };
 
     head = NULL;
+
+    for(int i = 0 ; i < hashSize;i++){
+
+        cordentry* e = hashTable[i];
+
+        if(e == NULL) continue;
+
+        while(e->next != NULL) e = e->next;
+
+        do{ 
+            cordentry* tmp = e->prev;
+            free(e);
+            e=e->prev;
+        }while(e != NULL);     
+
+        hashTable[i] = NULL;
+
+    };
 
 };
 

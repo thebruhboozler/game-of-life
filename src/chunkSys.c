@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
+
+
 
 
 extern int cameraX;
@@ -16,24 +19,38 @@ extern int windowH;
 
 int chunkNum = 0;
 node* head  = NULL;
+struct hsearch_data *htab;
+bool hashCreated = false;
+cordentry *hashTable[hashSize];
+int seed;
 
 
+
+char*  cordToStr(node* n);
 chunk* createChunk(int x,int y);
 void insertChunkNode(chunk* item);
 void deleteChunkNode(node* item);
 chunk** getVisableChunks(int* len);
 void handleClicks(int x ,int y);
+void enterCord(chunk *c);
+cordentry* findCord(int x, int y);
+uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed);
+static inline uint32_t murmur_32_scramble(uint32_t k);
+void deleteEntry(int x, int y);
 
 
 void insertChunkNode(chunk* item){
+
     node* tmp = calloc(1,sizeof(node));
+
     if(head == NULL){ // check if we have allocated the head
         head = tmp;
         tmp->segment = item;
         tmp->prev = NULL;
         tmp->next = NULL;
         return;
-    };  
+    };
+
     tmp->next = head;   // insert the element
     head->prev = tmp;
     tmp->prev = NULL;
@@ -43,6 +60,9 @@ void insertChunkNode(chunk* item){
 
 void deleteChunkNode(node* item){
     
+    int x = item->segment->x;
+    int y = item->segment->y;
+
     free(item->segment->aliveCells);
     free(item->segment);
 
@@ -56,6 +76,8 @@ void deleteChunkNode(node* item){
     }
     
     free(item);
+
+    deleteEntry(x,y);
 };
 
 chunk* createChunk(int x,int y){
@@ -73,9 +95,7 @@ chunk* createChunk(int x,int y){
 
     for(int i = 0; i < 8; i++) tmp->neighbours[i] = noNeighbour;  // by default no neigbours
 
-    node* n = head;
-
-    if(n == NULL) return tmp;   // if n is null than we know that there aren't any other chunks and it wont have neigbours
+    if(head == NULL) return tmp;   // if head is null then we know that there aren't any other chunks and it wont have neigbours
 
     int rightX = x + chunkLength;
     int leftX = x - chunkLength;    // neighbour x and y cords
@@ -83,31 +103,25 @@ chunk* createChunk(int x,int y){
     int upperY = y + chunkLength;
     int lowerY = y - chunkLength;
 
-    int neigbourCount = 0;
 
-    while(n->next != NULL){ // go through the linked list and check the chunks if they're neighbouring
+    cordentry* neighbour = findCord(leftX,upperY);
+    if(neighbour != NULL) tmp->neighbours[upperLeft] = neighbour -> segment;    // finding the neighbours
+    neighbour = findCord(x,upperY);
+    if(neighbour != NULL) tmp->neighbours[upper] = neighbour -> segment;
+    neighbour = findCord(rightX,upperY);
+    if(neighbour != NULL) tmp->neighbours[upperRight] = neighbour -> segment;
+    neighbour = findCord(leftX,y);
+    if(neighbour != NULL) tmp->neighbours[left] = neighbour -> segment;
+    neighbour = findCord(rightX,y);
+    if(neighbour != NULL) tmp->neighbours[right] = neighbour -> segment;
+    neighbour = findCord(leftX,lowerY);
+    if(neighbour != NULL) tmp->neighbours[lowerLeft] = neighbour -> segment;
+    neighbour = findCord(x,lowerY);
+    if(neighbour != NULL) tmp->neighbours[lower] = neighbour -> segment;
+    neighbour = findCord(rightX,lowerY);
+    if(neighbour != NULL) tmp->neighbours[lowerRight] = neighbour -> segment;
 
-        int currentX = n->segment->x;
-        int currentY = n->segment->y;
-        n = n->next;
-
-        int neigbourIndex = 0;
-
-        if(currentX == leftX && currentY == upperY) neigbourIndex = upperLeft;
-        else if(currentX == x && currentY == upperY) neigbourIndex = upper;
-        else if(currentX == rightX && currentY == upperY) neigbourIndex = upperRight;
-        else if(currentX == leftX && currentY == y) neigbourIndex = left;
-        else if(currentX == rightX && currentY == y) neigbourIndex = right;
-        else if(currentX == leftX && currentY == lowerY) neigbourIndex = lowerLeft;
-        else if(currentX == x && currentY == lowerY) neigbourIndex = lowerLeft;
-        else if(currentX == rightX && currentY == lowerY) neigbourIndex = lowerLeft;
-        else continue;
-
-        tmp->neighbours[neigbourIndex] = n->segment;
-
-        neigbourCount++;
-        if(neigbourCount == 8) return tmp; // if we have 8 neigbours stop looking
-    };
+    enterCord(tmp);
 
     return tmp;
 };
@@ -151,7 +165,7 @@ chunk** getVisableChunks(int* len){
 
     chunk** result = calloc(sizeof(chunk*),*len);
 
-    for(int i = 0 ; i < *len;i++) result[i] = tmp[i];
+    for(int i = 0 ; i < *len;i++) result[i] = tmp[i];   // copy results
 
     return result;
 };
@@ -180,14 +194,11 @@ void handleClicks(int x ,int y){
     int iy = targetY - squareY;
     unsigned short index = (chunkLength*iy)+ix;
 
-    node* n = head;
+    cordentry* entry = findCord(targetX,targetY);
 
-    while(n != NULL){
-        if(n->segment->x == targetX && n->segment->y == targetY){
-            toggleCell(n->segment,index);
-            return;
-        }
-        n = n->next;
+    if(entry != NULL){
+        toggleCell(entry->segment,index);
+        return;
     };
     
     chunk* newChunk = createChunk(targetX,targetY);
@@ -198,3 +209,121 @@ void handleClicks(int x ,int y){
 
     newChunk->aliveCells[0] = index;
 };
+
+static inline uint32_t murmur_32_scramble(uint32_t k) {
+    k *= 0xcc9e2d51;
+    k = (k << 15) | (k >> 17);
+    k *= 0x1b873593;
+    return k;
+};
+
+uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed){
+	uint32_t h = seed;
+    uint32_t k;
+
+    for (size_t i = len >> 2; i; i--) {
+        memcpy(&k, key, sizeof(uint32_t));
+        key += sizeof(uint32_t);
+        h ^= murmur_32_scramble(k);
+        h = (h << 13) | (h >> 19);
+        h = h * 5 + 0xe6546b64;
+    }
+    // Read the rest.
+    k = 0;
+    for (size_t i = len & 3; i; i--) {
+        k <<= 8;
+        k |= key[i - 1];
+    }
+
+    h ^= murmur_32_scramble(k);
+    
+	h ^= len;
+	h ^= h >> 16;
+	h *= 0x85ebca6b;
+	h ^= h >> 13;
+	h *= 0xc2b2ae35;
+	h ^= h >> 16;
+	return h;
+};
+
+void enterCord(chunk *c){
+
+    char cordstr[8];    // take cords and turn them into string
+
+    char* x = (char*) &(c->x);
+    char* y = (char*) &(c->y);
+
+    for(int i = 0 ; i < 4;i++) cordstr[i] = x[i];
+    for(int i = 4 ; i < 8;i++) cordstr[i] = y[i];
+
+
+    int slot = murmur3_32((uint8_t*) cordstr, 8 , seed ) % hashSize; //generate a slot for it 
+
+
+    cordentry* cord = (cordentry*) calloc(1,sizeof(cordentry));
+
+    cord->x = c->x;
+    cord->y = c->y;
+    cord->segment = c;  // copy data
+    cord->next = NULL;
+    cord->prev = NULL;
+
+    if(hashTable[slot] != NULL){    //check if the slot is avaliable 
+
+        cordentry* e = hashTable[slot];
+        
+        while(e->next != NULL) e = e->next;
+
+        e->next = cord;
+
+        cord->prev = e;
+
+        return;
+    };
+
+    hashTable[slot] = cord; // populate the slot
+};
+
+cordentry*  findCord(int x, int y){
+
+    char cordstr[8];    // take cords and turn them into string
+
+    char* cx = (char*) &x;
+    char* cy = (char*) &y;
+
+    for(int i = 0 ; i < 4;i++) cordstr[i] = cx[i];
+    for(int i = 4 ; i < 8;i++) cordstr[i] = cy[i];
+
+
+    int slot = murmur3_32((uint8_t*) cordstr, 8 , seed ) % hashSize; //generate a slot for it
+
+    cordentry* entry = hashTable[slot];
+
+    while(entry != NULL){   // check if its in the slot
+        if(entry->x == x && entry->y == y) return entry;
+        entry = entry -> next;  
+    };
+
+    return NULL;
+};
+
+void deleteEntry(int x, int y){
+    cordentry* temp = findCord(x,y);
+
+    if(temp->prev != NULL) temp->prev->next = temp->next;
+    else{
+        char cordstr[8];    // take cords and turn them into string
+
+        char* cx = (char*) &x;
+        char* cy = (char*) &y;
+
+        for(int i = 0 ; i < 4;i++) cordstr[i] = cx[i];
+        for(int i = 4 ; i < 8;i++) cordstr[i] = cy[i];
+
+        int slot = murmur3_32((uint8_t*) cordstr, 8 , seed ) % hashSize; //generate a slot for it
+
+        hashTable[slot] = temp->next; 
+    };
+
+    free(temp);
+}

@@ -9,6 +9,8 @@
 
 #define noNeighbour NULL
 
+#define hashSize 1024
+
 typedef struct chunk{
     int x,y,numOfCells,cellArrSize;
     unsigned short* aliveCells;
@@ -21,6 +23,13 @@ typedef struct node{
     struct node* prev;
     chunk* segment;
 }node;
+
+typedef struct cordentry{
+    int x,y;
+    chunk*  segment;
+    struct cordentry* next;
+    struct cordentry* prev;
+}cordentry;
 
 void deleteChunkNode(node* item);
 chunk** getVisableChunks(int* len);

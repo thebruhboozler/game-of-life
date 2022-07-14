@@ -4,15 +4,21 @@
 #include "game.h"
 #include "include/gtk.h"
 
+#include <time.h>
+
 
 #define null NULL
 
 
+
+int argc;
+char** argv;
 int windowW = 750;
 int windowH = 750;
 int cameraX = 0;
 int cameraY = 0;
 int squareSize = 10;
+extern int seed;
 GLFWwindow* window;
 
 
@@ -29,6 +35,10 @@ int main(int argc,char** argv){
     gtk_init(&argc,&argv);
 
     menuInit(); // intilise the menu
+
+    srand(time(0));
+
+    seed = rand();  //generate seed which will be later used to store coordinates in a hashmap
 
     window = glfwCreateWindow(windowW, windowH, "GameOfLife", null, null);
 
