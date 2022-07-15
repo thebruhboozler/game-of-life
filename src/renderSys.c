@@ -20,6 +20,7 @@ extern int menuOptionsNum;  // number of options
 extern char **menuOptionsTxt;   // the text to the menu
 extern int chunkNum;
 extern GLFWwindow* window;
+extern bool helpClicked;
 
 
 void drawCells(); // draws the cells which are visable on screen
@@ -30,6 +31,7 @@ void drawText(char* str,int x, int y, float r, float g, float b,void* font); //p
 void display(); // manages the display
 char* generateCoordinateString();   // generates the coordinate string
 char* generateTurnNumString();  //  generates the turn numString
+void helpMenu(); // displays help text
 float roundUp(int numToRound, int multiple);    // round a number to the nearest multiple
 
 
@@ -42,6 +44,15 @@ void display(){
     drawText(generateTurnNumString(),30,55,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);
     
     if(rightClicked) drawMenu(menuX,menuY); // drawing the menu if right clicked
+
+    if(helpClicked){
+
+        glColor3f(0,0,0);
+        drawSquare(0,0,windowW,windowH);
+        helpMenu();
+        return;
+    };
+
 };
 
 void drawCells(){
@@ -235,6 +246,24 @@ char* generateTurnNumString(){
     strcpy(result,str); //copy it into the normal sized string 
 
     return result;
+};
+
+void helpMenu(){
+    
+    drawText("W - move up ", 20, 20 , 1.0 ,1.0, 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+    drawText("S - move down ", 20, 50 , 1.0 ,1.0, 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+    drawText("A - move left ", 20, 80 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+    drawText("D - move right ", 20, 110 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+
+    drawText("Left Shift - move quickly ", 20, 140 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+
+    drawText("Space - pause/unpause ", 20, 170 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+
+    drawText("Left Mouse Button - toggle cells ", 20, 200 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+
+    drawText("Right Mouse Button - pop up menu ", 20, 230 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
+
+    drawText("Escape - leave help menu ", 20, 260 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
 };
 
 float roundUp(int numToRound, int multiple){    //rounds to the nearest multipe of a number
