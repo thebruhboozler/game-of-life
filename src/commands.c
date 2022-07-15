@@ -3,6 +3,7 @@
 #include "gtk/gtk.h"
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 
 extern node* head;
@@ -10,6 +11,10 @@ extern int chunkNum;
 extern int argc;
 extern char** argv;
 extern cordentry *hashTable[hashSize];
+extern int cameraX;
+extern int cameraY;
+
+bool helpClicked = false;
 
 
 void import(void);
@@ -18,7 +23,7 @@ void clearAll(void);
 void teleport(void);
 void help(void);
 void popUp (GtkWidget *wid, GtkWidget *win);
-
+void* unclickHelp(void* arg);
 
 void import(void){
 
@@ -75,7 +80,13 @@ void clearAll(void){
 
 void teleport(void){
 
+    cameraX = rand()%10000;
+    cameraY = rand()%10000;
+
 };
+
 void help(void){
+
+    helpClicked = true;
 
 };

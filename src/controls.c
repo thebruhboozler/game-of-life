@@ -21,6 +21,7 @@ extern int menuX;
 extern int menuY;
 extern int menuSize;
 extern int menuOptionsNum;
+extern bool helpClicked;
 
 bool rightClicked = false;
 bool paused = true;
@@ -75,6 +76,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         case GLFW_KEY_D:
             xVelocity = velocity * keyActive;
             break;
+        case GLFW_KEY_ESCAPE:
+            helpClicked = false;
+            return;
         default:
             break;
     }
@@ -103,7 +107,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             clickX = cursorX;
             clickY = cursorY;   //setting clicked postions
             
-            if(clickX > menuX && clickX < menuX+menuSize && clickY > menuY && clickY < menuY+menuSlotSize*menuOptionsNum && rightClicked == true){  //checking if click is on the menu 
+            if(rightClicked == true && clickX > menuX && clickX < menuX+menuSize && clickY > menuY && clickY < menuY+menuSlotSize*menuOptionsNum){  //checking if click is on the menu 
                 manageMenu(clickX,clickY);
                 return;
             }
