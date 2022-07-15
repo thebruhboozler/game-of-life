@@ -23,7 +23,7 @@ void clearAll(void);
 void teleport(void);
 void help(void);
 void popUp (GtkWidget *wid, GtkWidget *win);
-void* unclickHelp(void* arg);
+
 
 void import(void){
 
