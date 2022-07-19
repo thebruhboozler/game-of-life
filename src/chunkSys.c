@@ -218,7 +218,7 @@ static inline uint32_t murmur_32_scramble(uint32_t k) {
 };
 
 uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed){
-	uint32_t h = seed;
+    uint32_t h = seed;
     uint32_t k;
 
     for (size_t i = len >> 2; i; i--) {
