@@ -22,8 +22,6 @@ void exportf(void);
 void clearAll(void);
 void teleport(void);
 void help(void);
-void popUp (GtkWidget *wid, GtkWidget *win);
-
 
 void import(void){
 
