@@ -116,20 +116,6 @@ void createFile(int startX,int startY, int endX, int endY){
 	
 	int numOfCells = 0;
 
-	//printf("%d	%d\n", topLeftChunkX, topLeftChunkY);
-
-	node* n = head;
-
-	while(n != NULL){
-
-	//	printf("chunks: %d	 %d \n",n->segment->x, n->segment->y);
-
-		n = n -> next;
-
-	};
-
-
-
 	for(int i = 0; i < crossedChunkWidth;i++){
 
 		for(int j = 0 ; j < crossedChunkHeight; j++){
@@ -137,8 +123,6 @@ void createFile(int startX,int startY, int endX, int endY){
 			chunk* c = findCordChunk( topLeftChunkX, topLeftChunkY);
 			
 			topLeftChunkX += chunkLength;
-
-			//printf("%p	\n", c);
 
 			if(c == NULL) continue;
 
@@ -150,8 +134,6 @@ void createFile(int startX,int startY, int endX, int endY){
 		topLeftChunkY -= chunkLength;
 	};
 
-
-	//printf("%d	%d \n", chunkCount , numOfCells);
 
 	unsigned short* cellIndexes = (unsigned short*) calloc(numOfCells, sizeof(unsigned short));
 	int cellCount = 0;
