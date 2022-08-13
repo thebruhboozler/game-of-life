@@ -18,42 +18,40 @@ void toggleCell(chunk* c,int index);
 
 
 void playTurn(){
-    if(!paused) return;
+	if(!paused) return;
 
-    numOfTurns++;
+	numOfTurns++;
 
-    node* n = head;
+	node* n = head;
 
-    while(n != NULL){
-        updateChunk(n);
-        n = n->next;
-    };
+	while(n != NULL){
+		updateChunk(n);
+		n = n->next;
+	};
 };
 
 void updateChunk(node* chunk){
-    if(chunk->segment->numOfCells == 0){
-        deleteChunkNode(chunk);
-        return;
-    }
+	if(chunk->segment->numOfCells == 0){
+		deleteChunkNode(chunk);
+		return;
+	}
 };
 
 void toggleCell(chunk* c,int index){
 
-    for(int i = 0; i < c->numOfCells;i++){
-        if(c->aliveCells[i] != index) continue;
+	for(int i = 0; i < c->numOfCells;i++){
+		if(c->aliveCells[i] != index) continue;
 
-        int k = 0;
-        for(int j = 0; j < c->numOfCells;j++){
+		int k = 0;
+		for(int j = 0; j < c->numOfCells;j++){
 
-            if(c->aliveCells[j] == index) continue;
+			if(c->aliveCells[j] == index) continue;
 
-            c->aliveCells[k] = c->aliveCells[j];
-            k++;
-        };
-        c->numOfCells--;
-        return;
-    };
+			c->aliveCells[k++] = c->aliveCells[j];
+		};
+		c->numOfCells--;
+		return;
+	};
 
-    c->aliveCells[c->numOfCells] = index;
-    c->numOfCells++;
+	c->aliveCells[c->numOfCells++] = index;
 };
