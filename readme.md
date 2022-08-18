@@ -17,14 +17,21 @@ New chunks will be automatically created whenever a sturcture goes into a sectio
 
 Right clicking will reveal a pop up menu which will have various options 
 
+
 *import*: select a file in which a sturcture is stored then click on the grid to place the structure.
 (*warning*: this clears a rectangular area to create space for the structure,  this happens even if the structure isn't rectangular , so keep in mind the when importing a large structe smaller structures within its corner will be deleted)
+
 *export*: left click twice on different points and save a .txt file containing various numbers.
     (the first two numbers in the file are width and length of the selected area in terms of sqaures. the rest are indexes of all alive cells within the region.)
+ 
 *clear all* : deletes every chunk and cell , which effectively clears the grid of all structures.
+
 *teleport* : will teleport you to waypoints which you create. teleport option cycles through the list of waypoints based on chronological order.
+
 *add waypoint* : adds a waypoint at the coordinates which the user is at when it's pressed. The coordinates can be seen on the top right of the programme window.
+
 *clear waypoints* : deletes all existing waypoints.
+
 *help* : brings up the help screen.
 
 **compiling**
