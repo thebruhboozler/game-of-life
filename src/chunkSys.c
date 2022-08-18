@@ -19,7 +19,6 @@ node* head  = NULL;
 cordentry *hashTable[hashSize];
 
 
-char*  cordToStr(node* n);
 chunk* createChunk(int x,int y);
 void insertChunkNode(chunk* item);
 void deleteChunkNode(node* item);
