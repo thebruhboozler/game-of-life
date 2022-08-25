@@ -3,7 +3,7 @@ CC = gcc
 
 Libs = -lGL -lglfw -lglut -lgtk-3 
 
-cFiles = src/main.c src/renderSys.c src/controls.c src/menu.c src/commands.c src/chunkSys.c src/game.c
+cFiles = src/main.c src/renderSys.c src/controls.c src/menu.c src/commands.c src/chunkSys.c src/game.c src/utils.c
 
 
 
