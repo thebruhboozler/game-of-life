@@ -1,6 +1,5 @@
 #include "controls.h"
 #include "include/glfw3.h"
-#include "include/glut.h"
 #include "misc.h"
 #include "chunkSys.h"
 #include "commands.h"

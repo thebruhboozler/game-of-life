@@ -1,5 +1,5 @@
 #include "chunkSys.h"
-#include "renderSys.h"
+#include "utils.h"
 #include "game.h"
 
 #include <stdbool.h>
@@ -127,8 +127,8 @@ chunk** getVisableChunks(int* len){
 
 	if(n == NULL) return NULL;
 
-	int squareX = (int) roundUp(cameraX,squareSize)/squareSize;
-	int squareY = (int) roundUp(cameraY,squareSize)/squareSize;
+	int squareX, squareY ;
+	globalPcordsToScords( cameraX , cameraY , &squareX , &squareY);
 
 	int numOfHorSquares = (int) roundUp(windowW,squareSize)/squareSize;
 	int numOfVerSquares = (int) roundUp(windowH,squareSize)/squareSize;
@@ -163,23 +163,14 @@ chunk** getVisableChunks(int* len){
 
 void handleClicks(int x ,int y){
 
-	float tcx = x - windowW/2;
-	float tcy = windowH/2 - y;
+	int sx,sy;
+	screenToGlobaPixelCords( x , y , &sx , &sy);
 
-	int cx = (int) tcx;
-	int cy = (int) tcy;
+	int squareX, squareY ;
+	globalPcordsToScords( sx , sy , &squareX , &squareY);
 
-	int shiftX = (-cameraX)%squareSize;
-	int shiftY = (-cameraY)%squareSize;
-
-	int sx = cameraX + cx + shiftX;
-	int sy = cameraY + cy + shiftY;
-
-	int squareX = (int)(roundUp(sx,squareSize) - squareSize) / squareSize + 1;
-	int squareY = (int)(roundUp(sy,squareSize) - squareSize) / squareSize + 2;
-
-	int targetX = (int) roundUp(squareX,chunkLength) - chunkLength;
-	int targetY = (int) roundUp(squareY,chunkLength);
+	int targetX,targetY;
+	calcChunkCord( squareX , squareY , &targetX , &targetY);
 
 	int ix = squareX - targetX;
 	int iy = targetY - squareY;
@@ -200,16 +191,6 @@ void handleClicks(int x ,int y){
 
 	newChunk->aliveCells[0] = index;
 };
-
-unsigned int hash(int x, int y){
-	
-	y = y << 3;
-	x *= y;
-	y ^= x;
-	x &= y;
-	return ((x*y) | (x - y)) ^ ((x + y*y));
-};
-
 
 void enterCord(chunk *c){
 

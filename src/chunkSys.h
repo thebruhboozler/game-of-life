@@ -12,7 +12,7 @@
 #define hashSize 1024
 
 typedef struct chunk{
-	int x,y,numOfCells,cellArrSize;
+	int x,y,numOfCells,cellArrSize,lastUpdated;
 	unsigned short* aliveCells;
 	struct chunk* neighbours[8];
 }chunk;

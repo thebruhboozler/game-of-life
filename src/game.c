@@ -32,7 +32,8 @@ void playTurn(){
 
 void updateChunk(node* chunk){
 	if(chunk->segment->numOfCells == 0){
-		deleteChunkNode(chunk);
+		chunk->segment->lastUpdated++;
+		if(chunk->segment->lastUpdated == 5) deleteChunkNode(chunk);
 		return;
 	}
 };
@@ -52,6 +53,8 @@ void toggleCell(chunk* c,int index){
 		c->numOfCells--;
 		return;
 	};
+
+	if(c->numOfCells >= c->cellArrSize) c->cellArrSize*= 2 , c->aliveCells = realloc(c->aliveCells,c->cellArrSize);
 
 	c->aliveCells[c->numOfCells++] = index;
 };

@@ -1,7 +1,7 @@
 #include "commands.h"
 #include "chunkSys.h"
 #include "gtk/gtk.h"
-#include "renderSys.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -59,7 +59,7 @@ void createFile(int startX,int startY, int endX, int endY){
 
 	gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
 
-	gtk_file_chooser_set_current_name(chooser, "Untitled document");
+	gtk_file_chooser_set_current_name(chooser, "Untitled document.txt");
 
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) filename = gtk_file_chooser_get_filename(chooser);
@@ -70,24 +70,15 @@ void createFile(int startX,int startY, int endX, int endY){
 
 	// translate cords from screen space to global space
 
-	float cx = startX - windowW*0.5;
-	float cy = windowH*0.5 - startY;
-	float ecx = endX - windowW*0.5;
-	float ecy = windowH*0.5 - endY;
-
-
-	int gx = cameraX + cx;
-	int gy = cameraY + cy;
-	int egx = cameraX + ecx;
-	int egy = cameraY + ecy;
+	int gx,gy,egx,egy;
+	
+	screenToGlobaPixelCords( startX , startY , &gx , &gy);
+	screenToGlobaPixelCords( endX , endY , &egx , &egy);
 
 	//convert the cords from global pixel space to global square space
 	//need to ensure that we select the correct chunks 
-	startX = (int) (roundUp( gx ,squareSize)/squareSize);
-	startY = (int) (roundUp( gy ,squareSize)/squareSize);
-
-	endX = (int) (roundUp( egx ,squareSize)/squareSize);
-	endY = (int) (roundUp( egy ,squareSize)/squareSize);
+	globalPcordsToScords( startX , startY , &startX , &startY);
+	globalPcordsToScords( endX , endY , &endX , &endY);
 
 	//calculate the top left and the bottom right coordintades of the rectange we've been provided
 	//needed to ensure that we are able select the chunks from the top left to bottom right 
@@ -101,12 +92,10 @@ void createFile(int startX,int startY, int endX, int endY){
 
 	int lowerRightY = (topLeftY != startY) * startY + (topLeftY != endY) * endY;
 
+	int topLeftChunkX, topLeftChunkY , lowerRightChunkX , lowerRightChunkY;
 
-	int topLeftChunkX = roundUp(topLeftX , chunkLength) - chunkLength;  	
-	int topLeftChunkY = roundUp(topLeftY , chunkLength);
-
-	int lowerRightChunkX = roundUp(lowerRightX , chunkLength) - chunkLength;
-	int lowerRightChunkY = roundUp(lowerRightY , chunkLength);
+	calcChunkCord( topLeftX , topLeftY , &topLeftChunkX , &topLeftChunkY );
+	calcChunkCord( lowerRightX , lowerRightY , &lowerRightChunkX , &lowerRightChunkY);
 
 	int crossedChunkWidth = ((lowerRightChunkX - topLeftChunkX)/chunkLength ) + (topLeftChunkX == lowerRightChunkX);
 	int crossedChunkHeight =((topLeftChunkY - lowerRightChunkY)/chunkLength ) + (topLeftChunkY == lowerRightChunkY);

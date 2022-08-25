@@ -6,6 +6,5 @@
 
 void display();
 
-float roundUp(int numToRound, int multiple);
 
 #endif

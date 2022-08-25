@@ -1,7 +1,7 @@
 #include "misc.h"
-#include "renderSys.h"
 #include "controls.h"
 #include "commands.h"
+#include "utils.h"
 
 #include <stdbool.h>
 #include <string.h>

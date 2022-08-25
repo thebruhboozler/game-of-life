@@ -1,6 +1,7 @@
 #include "renderSys.h"
 #include "misc.h"
 #include "chunkSys.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -264,14 +265,4 @@ void helpMenu(){
 	drawText("Right Mouse Button - pop up menu ", 20, 230 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
 
 	drawText("Escape - leave help menu ", 20, 260 , 1.0 ,1.0 , 1.0, GLUT_BITMAP_TIMES_ROMAN_24);
-};
-
-float roundUp(int numToRound, int multiple){    //rounds to the nearest multipe of a number
-	if (multiple == 0) return numToRound;
-
-	int remainder = abs(numToRound) % multiple;
-	if (remainder == 0) return numToRound;
-
-	if (numToRound < 0) return -(abs(numToRound) - remainder);
-	else return numToRound + multiple - remainder;
 };
