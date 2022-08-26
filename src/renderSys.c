@@ -33,7 +33,6 @@ void display(); // manages the display
 char* generateCoordinateString();   // generates the coordinate string
 char* generateTurnNumString();  //  generates the turn numString
 void helpMenu(); // displays help text
-float roundUp(int numToRound, int multiple);    // round a number to the nearest multiple
 
 
 void display(){
