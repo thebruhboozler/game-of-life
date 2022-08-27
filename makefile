@@ -1,11 +1,21 @@
+SOURCE_FILES = src/main.c src/renderSys.c src/controls.c src/menu.c src/commands.c src/chunkSys.c src/game.c src/utils.c
+OBJECT_FILES = $(patsubst %.c, %.o, $(SOURCE_FILES))
 
-CC = gcc
+CFLAGS = -ggdb3 -Og 
+CFLAGS += $(shell pkg-config --cflags gtk+-3.0 gl glfw3)
 
-Libs = -lGL -lglfw -lglut -lgtk-3 
+LDFLAGS = 
+LDFLAGS += $(shell pkg-config --libs gtk+-3.0 gl glfw3) -lglut
 
-cFiles = src/main.c src/renderSys.c src/controls.c src/menu.c src/commands.c src/chunkSys.c src/game.c src/utils.c
+.PHONY: all clean
 
+all: GameOfLife.out
 
+src/%.o: src/%.c
+	$(CC) $(CFLAGS) -c "$<" -o "$@"
 
-main.o: $(cFiles)
-	$(CC) $(cFiles) $(shell pkg-config --cflags gtk+-3.0) $(Libs)  $(shell pkg-config --libs gtk+-3.0) -g -o GameOfLife.out
+GameOfLife.out: $(OBJECT_FILES)
+	$(CC) $(OBJECT_FILES) -o "$@" $(LDFLAGS)
+
+clean:
+	rm src/*.o
