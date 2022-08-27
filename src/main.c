@@ -4,8 +4,6 @@
 #include "game.h"
 #include "include/gtk.h"
 
-#include <time.h>
-
 
 #define null NULL
 
