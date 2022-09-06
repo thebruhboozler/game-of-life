@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 
 extern node* head;
@@ -40,7 +41,6 @@ void import(void){
 void exportf(void){
 
 	exportClicked = true;
-
 };
 
 void createFile(int startX,int startY, int endX, int endY){
@@ -77,19 +77,17 @@ void createFile(int startX,int startY, int endX, int endY){
 
 	//convert the cords from global pixel space to global square space
 	//need to ensure that we select the correct chunks 
-	globalPcordsToScords( startX , startY , &startX , &startY);
-	globalPcordsToScords( endX , endY , &endX , &endY);
+	globalPcordsToScords( gx, gy, &startX , &startY);
+	globalPcordsToScords( egx, egy , &endX , &endY);
 
 	//calculate the top left and the bottom right coordintades of the rectange we've been provided
 	//needed to ensure that we are able select the chunks from the top left to bottom right 
 	//the user may select the area inversly so we need to check
 
 	int topLeftX = (startX < endX) * startX + (endX < startX) * endX + (startX == endX) * startX; //take the lowest x value
-
 	int topLeftY = (startY > endY) * startY + (endY > startY) * endY + (startY == endY) * startY; //take the highest y value
 
 	int lowerRightX = (topLeftX != startX) * startX + (topLeftX != endX) * endX;
-
 	int lowerRightY = (topLeftY != startY) * startY + (topLeftY != endY) * endY;
 
 	int topLeftChunkX, topLeftChunkY , lowerRightChunkX , lowerRightChunkY;
@@ -97,39 +95,32 @@ void createFile(int startX,int startY, int endX, int endY){
 	calcChunkCord( topLeftX , topLeftY , &topLeftChunkX , &topLeftChunkY );
 	calcChunkCord( lowerRightX , lowerRightY , &lowerRightChunkX , &lowerRightChunkY);
 
-	int crossedChunkWidth = ((lowerRightChunkX - topLeftChunkX)/chunkLength ) + (topLeftChunkX == lowerRightChunkX);
-	int crossedChunkHeight =((topLeftChunkY - lowerRightChunkY)/chunkLength ) + (topLeftChunkY == lowerRightChunkY);
+	chunk* chunks[128]; 
+	int chunkCount = 0, numOfCells = 0;
 
-	chunk** chunks = (chunk**) calloc( crossedChunkWidth * crossedChunkHeight , sizeof(chunk**));
-	int chunkCount = 0;
+	int topLeftChunkXStart = topLeftChunkX;
 	
-	int numOfCells = 0;
+	//going throught the chunks from top left to bottom right
+	for(topLeftChunkY; topLeftChunkY >= lowerRightChunkY - chunkLength; topLeftChunkY -= chunkLength){
 
-	for(int i = 0; i < crossedChunkWidth;i++){
+		for(topLeftChunkX = topLeftChunkXStart; topLeftChunkX < lowerRightChunkX + chunkLength ; topLeftChunkX += chunkLength){
 
-		for(int j = 0 ; j < crossedChunkHeight; j++){
+			chunk* temp = findCordChunk(topLeftChunkX ,topLeftChunkY);
 
-			chunk* c = findCordChunk( topLeftChunkX, topLeftChunkY);
-			
-			topLeftChunkX += chunkLength;
-
-			if(c == NULL) continue;
-
-			chunks[chunkCount++] = c;
-
-			numOfCells += c->numOfCells;
-
+			if(temp == NULL) continue;
+			chunks[chunkCount++] = temp;
 		};
-		topLeftChunkY -= chunkLength;
 	};
-
-
-	unsigned short* cellIndexes = (unsigned short*) calloc(numOfCells, sizeof(unsigned short));
-	int cellCount = 0;
-
+	
 	int squareWidth = lowerRightX - topLeftX;
 
 	int squareHeight = topLeftY - lowerRightY;
+
+	// move the data to a file
+	FILE* fp = fopen(filename,"w");
+
+	fprintf(fp,"%d %d ",squareWidth,squareHeight);
+	g_free(filename);
 
 	for(int i = 0; i < chunkCount; i++){
 		
@@ -140,7 +131,6 @@ void createFile(int startX,int startY, int endX, int endY){
 			int index = tmp->aliveCells[j];
 
 			int cellGlobalX = tmp->x + index%chunkLength;
-
 			int cellGlobalY = tmp->y - (int) (roundUp(index,chunkLength) - chunkLength) / chunkLength;
 
 			// checking if the current cell selected is within the selected area
@@ -149,26 +139,13 @@ void createFile(int startX,int startY, int endX, int endY){
 			//calculate the index within the selected area
 
 			unsigned short selectedX = (unsigned short) cellGlobalX - topLeftX;
-
 			unsigned short selectedY = (unsigned short) topLeftY - cellGlobalY;
 
-			cellIndexes[cellCount++] = (unsigned short)((selectedY - 1)* squareWidth + selectedX); 
-
+			fprintf(fp," %hu ", (unsigned short)((selectedY - 1)* squareWidth + selectedX)); 
 		};
 
 	};
 
-	// move the data to a file
-	FILE* fp = fopen(filename,"w");
-
-	fprintf(fp,"%d %d ",squareWidth,squareHeight);
-
-	g_free(filename);
-
-	for(int i = 0; i < cellCount; i++) fprintf(fp," %d ", cellIndexes[i]);
-
-	free(chunks);
-	free(cellIndexes);
 };
 
 
@@ -186,18 +163,6 @@ void clearAll(void){
 
 	chunkNum = 0;
 
-	node* n = head;
-
-	while (n != NULL){
-		free(n->segment->aliveCells);
-		free(n->segment);
-		node* l = n->next;
-		free(n);
-		n = l;
-	};
-
-	head = NULL;
-
 	for(int i = 0 ; i < hashSize;i++){
 
 		cordentry* e = hashTable[i];
@@ -206,9 +171,10 @@ void clearAll(void){
 
 		while(e->next != NULL) e = e->next;
 
-		do{ 
+		do{
+			cordentry* tmp = e -> prev; 
 			free(e);
-			e=e->prev;
+			e = tmp;
 		}while(e != NULL);     
 
 		hashTable[i] = NULL;
@@ -228,14 +194,12 @@ void teleport(void){
 void help(void){
 
 	helpClicked = true;
-
 };
 
 void addWaypoint(void){
 
 	waypoints[numOfWaypoints].x = cameraX;
 	waypoints[numOfWaypoints++].y = cameraY;
-
 };
 
 void clearWaypoint(void){
