@@ -211,4 +211,3 @@ void deleteEntry(int x, int y){
 void deleteChunk(cordentry* e){
 	deleteEntry(e->segment->x , e->segment->y);
 };
->>>>>>> a21a562181b15c7ae6726495e34e6f62808dc737

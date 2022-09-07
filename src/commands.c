@@ -22,6 +22,7 @@ bool exportClicked = false;
 int currentWaypoint = 0;
 waypoint waypoints[sizeOfwaypoints];
 int numOfWaypoints = 0;
+bool importing = false;
 
 
 void import(void);
@@ -32,9 +33,27 @@ void help(void);
 void addWaypoint(void);
 void clearWaypoint(void);
 void createFile(int startX, int startY, int endX, int endY);
+void importStructure(FILE* fp);
 
 
 void import(void){
+
+	importing = true;
+	GtkWidget *dialog;
+	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+	gint res;
+
+	dialog = gtk_file_chooser_dialog_new ("Open File", NULL ,action, "_Cancel", GTK_RESPONSE_CANCEL,"_Open", GTK_RESPONSE_ACCEPT, NULL);
+
+	res = gtk_dialog_run (GTK_DIALOG (dialog));
+	if (res == GTK_RESPONSE_ACCEPT){
+    		char *filename;
+    		GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+    		filename = gtk_file_chooser_get_filename (chooser);
+		printf("filename = %s",filename);
+	}; 
+
+	gtk_widget_destroy (dialog);
 
 };
 
