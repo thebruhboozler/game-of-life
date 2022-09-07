@@ -5,8 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-
+ 
 
 extern int cameraX;
 extern int cameraY;
@@ -15,61 +14,18 @@ extern int windowW;
 extern int windowH;
 
 int chunkNum = 0;
-node* head  = NULL;
 cordentry *hashTable[hashSize];
 
 
 chunk* createChunk(int x,int y);
-void insertChunkNode(chunk* item);
-void deleteChunkNode(node* item);
 chunk** getVisableChunks(int* len);
 void handleClicks(int x ,int y);
 void enterCord(chunk *c);
 cordentry* findCord(int x, int y);
 void deleteEntry(int x, int y);
 chunk* findCordChunk(int x, int y);
+void deleteChunk(cordentry* e);
 
-
-void insertChunkNode(chunk* item){
-
-	node* tmp = calloc(1,sizeof(node));
-
-	if(head == NULL){ // check if we have allocated the head
-		head = tmp;
-		tmp->segment = item;
-		tmp->prev = NULL;
-		tmp->next = NULL;
-		return;
-	};
-
-	tmp->next = head;   // insert the element
-	head->prev = tmp;
-	tmp->prev = NULL;
-	tmp->segment = item;
-	head = tmp;
-};
-
-void deleteChunkNode(node* item){
-	
-	int x = item->segment->x;
-	int y = item->segment->y;
-
-	free(item->segment->aliveCells);
-	free(item->segment);
-
-	node* tmp = item->prev; //take the previous node
-	if(tmp == NULL){    // check if it is the head 
-		head = item->next;
-		if(head != NULL) head->prev = NULL;
-	}else{
-		tmp->next = item->next;
-		if(tmp->next) item->next->prev = tmp; //check if it is the tail
-	}
-	
-	free(item);
-
-	deleteEntry(x,y);
-};
 
 chunk* createChunk(int x,int y){
 
@@ -86,14 +42,11 @@ chunk* createChunk(int x,int y){
 
 	for(int i = 0; i < 8; i++) tmp->neighbours[i] = noNeighbour;  // by default no neigbours
 
-	if(head == NULL) return tmp;   // if head is null then we know that there aren't any other chunks and it wont have neigbours
-
 	int rightX = x + chunkLength;
 	int leftX = x - chunkLength;    // neighbour x and y cords
 
 	int upperY = y + chunkLength;
 	int lowerY = y - chunkLength;
-
 
 	cordentry* neighbour = findCord(leftX,upperY);
 	if(neighbour != NULL) tmp->neighbours[upperLeft] = neighbour -> segment;    // finding the neighbours
@@ -112,8 +65,6 @@ chunk* createChunk(int x,int y){
 	neighbour = findCord(rightX,lowerY);
 	if(neighbour != NULL) tmp->neighbours[lowerRight] = neighbour -> segment;
 
-	enterCord(tmp);
-
 	return tmp;
 };
 
@@ -122,10 +73,6 @@ chunk** getVisableChunks(int* len){
 	chunk* tmp[256]; 
 
 	int chunkCount = 0;
-
-	node* n = head;
-
-	if(n == NULL) return NULL;
 
 	int squareX, squareY ;
 	globalPcordsToScords( cameraX , cameraY , &squareX , &squareY);
@@ -137,19 +84,24 @@ chunk** getVisableChunks(int* len){
 	int lowerY= squareY - chunkLength - numOfVerSquares/2;
 
 	int rightX = squareX + numOfHorSquares/2;
-	int upperY = squareY + chunkLength + numOfVerSquares/2;
+	int topY = squareY + chunkLength + numOfVerSquares/2;
 
+	int topLeftChunkX , topLeftChunkY, lowerRightChunkX , lowerRightChunkY;
 
-	while(n != NULL){ // go throught the linked list
-		int x = n->segment->x;
-		int y = n->segment->y;
+	calcChunkCord(leftX ,topY ,&topLeftChunkX ,&topLeftChunkY);
+	calcChunkCord(rightX, lowerY, &lowerRightChunkX ,&lowerRightChunkY);
 
-		if(x >  leftX && x < rightX && y > lowerY && y < upperY){
-			tmp[chunkCount] = n->segment;
-			chunkCount++;
+	int topLeftChunkXStart = topLeftChunkX;
+
+	for(topLeftChunkY; topLeftChunkY >= lowerRightChunkY - chunkLength; topLeftChunkY -= chunkLength){
+
+		for(topLeftChunkX = topLeftChunkXStart; topLeftChunkX < lowerRightChunkX + chunkLength ; topLeftChunkX += chunkLength){
+
+			chunk* temp = findCordChunk(topLeftChunkX ,topLeftChunkY);
+
+			if(temp == NULL) continue;
+			tmp[chunkCount++] = temp;
 		};
-
-		n = n->next;
 	};
 
 	*len = chunkCount;  //set len
@@ -182,14 +134,12 @@ void handleClicks(int x ,int y){
 		toggleCell(clickedChunk,index);
 		return;
 	};
-	
+
 	chunk* newChunk = createChunk(targetX,targetY);
 
-	insertChunkNode(newChunk);
+	enterCord(newChunk);
 
-	newChunk->numOfCells++;
-
-	newChunk->aliveCells[0] = index;
+	toggleCell(newChunk,index);
 };
 
 void enterCord(chunk *c){
@@ -201,8 +151,6 @@ void enterCord(chunk *c){
 	cord->x = c->x;
 	cord->y = c->y;
 	cord->segment = c;  // copy data
-	cord->next = NULL;
-	cord->prev = NULL;
 
 	if(hashTable[slot] != NULL){    //check if the slot is avaliable 
 
@@ -244,6 +192,8 @@ chunk* findCordChunk(int x, int y){
 
 void deleteEntry(int x, int y){
 	cordentry* temp = findCord(x,y);
+
+	if(temp == NULL) return;
 	
 	if(temp->prev != NULL) temp->prev->next = temp->next;
 	else{
@@ -255,3 +205,10 @@ void deleteEntry(int x, int y){
 
 	free(temp);
 };
+<<<<<<< HEAD
+=======
+
+void deleteChunk(cordentry* e){
+	deleteEntry(e->segment->x , e->segment->y);
+};
+>>>>>>> a21a562181b15c7ae6726495e34e6f62808dc737

@@ -38,6 +38,8 @@ chunk** getVisableChunks(int* len);
 void insertChunkNode(chunk* item);
 chunk* createChunk(int x,int y);
 void handleClicks(int x ,int y);
+void deleteChunk(cordentry* e);
+
 
 enum{
 	upperLeft,

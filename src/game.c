@@ -6,14 +6,14 @@
 #include <stdio.h>
 
 
-extern node* head;
+extern cordentry* hashTable[hashSize];
 extern bool paused;
 
 int numOfTurns = 0;
 
 
 void playTurn();
-void updateChunk(node* chunk);
+void updateChunk(cordentry* chunk);
 void toggleCell(chunk* c,int index);
 
 
@@ -22,20 +22,24 @@ void playTurn(){
 
 	numOfTurns++;
 
-	node* n = head;
+	for(int i = 0; i < hashSize; i++){
 
-	while(n != NULL){
-		updateChunk(n);
-		n = n->next;
+		cordentry* e = hashTable[i];
+
+		while(e !=NULL){
+			updateChunk(e);
+			e = e->next;
+		};
 	};
+
 };
 
-void updateChunk(node* chunk){
+void updateChunk(cordentry* chunk){
 	if(chunk->segment->numOfCells == 0){
 		chunk->segment->lastUpdated++;
-		if(chunk->segment->lastUpdated == 5) deleteChunkNode(chunk);
+		if(chunk->segment->lastUpdated == 5) deleteChunk(chunk);
 		return;
-	}
+	};
 };
 
 void toggleCell(chunk* c,int index){
