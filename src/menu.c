@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 
 void (*menuFunc[64])(void); // function pointers for the menu options
@@ -62,9 +61,9 @@ void manageMenu(int x ,int y){
 	
 	rightClicked = false;
 
-	int ry = y - menuY;
+	int ry = menuY - y;
 
-	int option = (roundUp(menuSlotSize,ry)/menuSlotSize);
+	int option = abs((int)(roundUp(menuSlotSize,ry)/menuSlotSize));
 
 	(*menuFunc[option])();
 };

@@ -205,8 +205,6 @@ void deleteEntry(int x, int y){
 
 	free(temp);
 };
-<<<<<<< HEAD
-=======
 
 void deleteChunk(cordentry* e){
 	deleteEntry(e->segment->x , e->segment->y);

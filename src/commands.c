@@ -23,6 +23,7 @@ int currentWaypoint = 0;
 waypoint waypoints[sizeOfwaypoints];
 int numOfWaypoints = 0;
 bool importing = false;
+FILE* imported = NULL;
 
 
 void import(void);
@@ -33,8 +34,7 @@ void help(void);
 void addWaypoint(void);
 void clearWaypoint(void);
 void createFile(int startX, int startY, int endX, int endY);
-void importStructure(FILE* fp);
-
+void importStructure(FILE *fp, int x , int y);
 
 void import(void){
 
@@ -46,19 +46,27 @@ void import(void){
 	dialog = gtk_file_chooser_dialog_new ("Open File", NULL ,action, "_Cancel", GTK_RESPONSE_CANCEL,"_Open", GTK_RESPONSE_ACCEPT, NULL);
 
 	res = gtk_dialog_run (GTK_DIALOG (dialog));
-	if (res == GTK_RESPONSE_ACCEPT){
-    		char *filename;
-    		GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
-    		filename = gtk_file_chooser_get_filename (chooser);
-		printf("filename = %s",filename);
-	}; 
+	
+	if (res != GTK_RESPONSE_ACCEPT){
+		importing = false;
+		return;
+	};
 
+	printf("gone call \n");
+
+	char *filename;
+	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+	filename = gtk_file_chooser_get_filename (chooser);
 	gtk_widget_destroy (dialog);
+};
+
+void importStructure(FILE *fp, int x , int y){
+
+	printf("called \n");
 
 };
 
 void exportf(void){
-
 	exportClicked = true;
 };
 
@@ -82,7 +90,7 @@ void createFile(int startX,int startY, int endX, int endY){
 
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) filename = gtk_file_chooser_get_filename(chooser);
-	
+	else return;
 
 	gtk_widget_destroy(dialog);
 

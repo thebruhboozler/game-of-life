@@ -23,6 +23,8 @@ extern int menuSize;
 extern int menuOptionsNum;
 extern bool helpClicked;
 extern bool exportClicked;
+extern bool importing;
+extern FILE* imported; 
 
 bool rightClicked = false;
 bool paused = true;
@@ -127,6 +129,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 				createFile(selectionX, selectionY, clickX,clickY);
 				return;
 			};
+			if(importing == true){
+				importing = false;
+				printf("importing called \n");
+				importStructure( imported , clickX, clickY);
+				return;
+			};
 			handleClicks(clickX,clickY);
 
 			break;
@@ -146,7 +154,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 	
 	squareSize+= (int)yoffset; //changing the square size so its like zomming in and out
 
-	int squareStatus = (squareSize <= maxSquareSize) - (squareSize >= minSquareSize);   //checking if it is within the boundries (from 4 to 50). if it is too large status will be -1 if it is ok status will be 0 and 1 if it is too small 
+	int squareStatus = (squareSize <= maxSquareSize) - (squareSize >= minSquareSize); //checking if it's within the bounds (from 4 to 50).if it is too large status will be -1 if it's ok status will be 0 and 1 if it's too small 
 	
 	switch (squareStatus){
 		case 0:
