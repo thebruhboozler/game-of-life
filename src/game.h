@@ -3,8 +3,12 @@
 
 #include "chunkSys.h"
 
+#define cellToggle 0
+#define absoluteOn 1
+#define absoluteOff 2
+
 void playTurn();
-void toggleCell(chunk* c,int index);
+void toggleCell(chunk* c,int index, int action);
 
 
 #endif

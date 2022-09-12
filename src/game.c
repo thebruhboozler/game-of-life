@@ -14,8 +14,7 @@ int numOfTurns = 0;
 
 void playTurn();
 void updateChunk(cordentry* chunk);
-void toggleCell(chunk* c,int index);
-
+void toggleCell(chunk* c,int index, int action);
 
 void playTurn(){
 	if(!paused) return;
@@ -42,7 +41,16 @@ void updateChunk(cordentry* chunk){
 	};
 };
 
-void toggleCell(chunk* c,int index){
+
+void toggleCell(chunk* c,int index, int action){
+
+	switch(action){
+		case absoluteOn:
+			goto TurnOn;
+		case absoluteOff:
+			goto TurnOff;
+	};
+
 
 	for(int i = 0; i < c->numOfCells;i++){
 		if(c->aliveCells[i] != index) continue;
@@ -61,4 +69,35 @@ void toggleCell(chunk* c,int index){
 	if(c->numOfCells >= c->cellArrSize) c->cellArrSize*= 2 , c->aliveCells = realloc(c->aliveCells,c->cellArrSize);
 
 	c->aliveCells[c->numOfCells++] = index;
+
+	return;
+
+TurnOn:
+
+	for(int i = 0; i < c->numOfCells; i++)
+		if(index == c->aliveCells[i]) return;
+
+	if(c->numOfCells >= c->cellArrSize) c->cellArrSize*= 2 , c->aliveCells = realloc(c->aliveCells,c->cellArrSize);
+
+	c->aliveCells[c->numOfCells++] = index;
+
+	return;
+
+TurnOff:
+
+
+	for(int i = 0; i < c->numOfCells;i++){
+		if(c->aliveCells[i] != index) continue;
+
+		int k = 0;
+		for(int j = 0; j < c->numOfCells;j++){
+
+			if(c->aliveCells[j] == index) continue;
+
+			c->aliveCells[k++] = c->aliveCells[j];
+		};
+		c->numOfCells--;
+		return;
+	};
+
 };

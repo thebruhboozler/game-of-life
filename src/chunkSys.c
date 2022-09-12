@@ -131,7 +131,7 @@ void handleClicks(int x ,int y){
 	chunk* clickedChunk = findCordChunk(targetX,targetY);
 
 	if(clickedChunk != NULL){
-		toggleCell(clickedChunk,index);
+		toggleCell(clickedChunk, index, cellToggle);
 		return;
 	};
 
@@ -139,7 +139,7 @@ void handleClicks(int x ,int y){
 
 	enterCord(newChunk);
 
-	toggleCell(newChunk,index);
+	toggleCell(newChunk,index,absoluteOn);
 };
 
 void enterCord(chunk *c){

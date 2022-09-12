@@ -33,12 +33,11 @@ typedef struct cordentry{
 
 
 chunk* findCordChunk(int x, int y);
-void deleteChunkNode(node* item);
 chunk** getVisableChunks(int* len);
-void insertChunkNode(chunk* item);
 chunk* createChunk(int x,int y);
 void handleClicks(int x ,int y);
 void deleteChunk(cordentry* e);
+void enterCord(chunk* c);
 
 
 enum{

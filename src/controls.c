@@ -24,7 +24,7 @@ extern int menuOptionsNum;
 extern bool helpClicked;
 extern bool exportClicked;
 extern bool importing;
-extern FILE* imported; 
+
 
 bool rightClicked = false;
 bool paused = true;
@@ -131,8 +131,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 			};
 			if(importing == true){
 				importing = false;
-				printf("importing called \n");
-				importStructure( imported , clickX, clickY);
+				importStructure(clickX, clickY);
 				return;
 			};
 			handleClicks(clickX,clickY);

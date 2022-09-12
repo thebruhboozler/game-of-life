@@ -2,10 +2,12 @@
 #include "chunkSys.h"
 #include "gtk/gtk.h"
 #include "utils.h"
+#include "game.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 
 extern node* head;
@@ -34,10 +36,10 @@ void help(void);
 void addWaypoint(void);
 void clearWaypoint(void);
 void createFile(int startX, int startY, int endX, int endY);
-void importStructure(FILE *fp, int x , int y);
+void importStructure(int x , int y);
 
 void import(void){
-
+	// choose a file to read from
 	importing = true;
 	GtkWidget *dialog;
 	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -52,18 +54,92 @@ void import(void){
 		return;
 	};
 
-	printf("gone call \n");
-
 	char *filename;
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 	filename = gtk_file_chooser_get_filename (chooser);
+	imported = fopen(filename,"r");
 	gtk_widget_destroy (dialog);
 };
 
-void importStructure(FILE *fp, int x , int y){
+void importStructure(int x , int y){
+	
+	//stop importing
+	importing = false;
 
-	printf("called \n");
+	//get the size of the file 
 
+	fseek(imported , 0l, SEEK_END);
+	int fileSize = ftell(imported);
+	rewind(imported);
+
+	//copy the contents to a string
+
+	char* input = (char*) calloc(++fileSize,sizeof(char));
+
+	for(int i = 0 ; i < fileSize - 1; i++) input[i] = fgetc(imported);
+
+	//close the file 
+	fclose(imported);
+	imported = NULL;
+
+
+	//get the coordinates
+	int gx,gy;
+	screenToGlobaPixelCords( x, y, &gx, &gy);
+
+	int gsx, gsy;
+	globalPcordsToScords( gx, gy, &gsx, &gsy);
+
+	//get the height and width from the txt file
+
+	char* token = strtok(input," ");
+	int width = atoi(token);
+
+	token = strtok(NULL," ");
+	int height = atoi(token);
+
+	//for each index within the file calculate global coordinates
+	//then calucalte their chunk coordinates 
+	//then calculate the indexes withiin said chunks
+
+	chunk* tmp = NULL;
+	bool tmpInitialized = false;
+	token = strtok(NULL," ");
+
+
+	while(token){
+		
+		int index = atoi(token);
+
+		int cellCordX = index % width; // get x position
+		int cellCordY = (int)(roundUp(index,width)-width)/width;    // get the y position
+
+		int globalCellCordX = gsx + cellCordX;
+		int globalCellCordY = gsy - cellCordY;
+
+		int targetX ,targetY;
+
+		calcChunkCord( globalCellCordX , globalCellCordY , &targetX , &targetY);
+	
+		if(!tmpInitialized) tmpInitialized = true, tmp = findCordChunk( targetX , targetY);
+
+		if(tmp != NULL && tmp->x != targetX && tmp->y != targetY) tmp = findCordChunk( targetX , targetY);
+
+		if(tmp == NULL){
+			//createChunk
+			tmp = createChunk(targetX, targetY);
+			enterCord(tmp);
+		};
+
+		int chunkCellX = globalCellCordX - tmp->x;
+		int chunkCellY = targetY - globalCellCordY;
+		int chunkIndex = (chunkCellY * chunkLength) + chunkCellX;
+
+		toggleCell(tmp, chunkIndex , absoluteOn);
+		
+		token = strtok(NULL," ");
+	};
+	free(input);
 };
 
 void exportf(void){
@@ -123,8 +199,8 @@ void createFile(int startX,int startY, int endX, int endY){
 	calcChunkCord( lowerRightX , lowerRightY , &lowerRightChunkX , &lowerRightChunkY);
 
 	chunk* chunks[128]; 
-	int chunkCount = 0, numOfCells = 0;
-
+	int chunkCount = 0;
+	
 	int topLeftChunkXStart = topLeftChunkX;
 	
 	//going throught the chunks from top left to bottom right
@@ -137,8 +213,7 @@ void createFile(int startX,int startY, int endX, int endY){
 			if(temp == NULL) continue;
 			chunks[chunkCount++] = temp;
 		};
-	};
-	
+	};	
 	int squareWidth = lowerRightX - topLeftX;
 
 	int squareHeight = topLeftY - lowerRightY;
@@ -168,11 +243,12 @@ void createFile(int startX,int startY, int endX, int endY){
 			unsigned short selectedX = (unsigned short) cellGlobalX - topLeftX;
 			unsigned short selectedY = (unsigned short) topLeftY - cellGlobalY;
 
-			fprintf(fp," %hu ", (unsigned short)((selectedY - 1)* squareWidth + selectedX)); 
+			fprintf(fp,"%hu ", (unsigned short)((selectedY - 1)* squareWidth + selectedX)); 
 		};
 
 	};
 
+	fclose(fp);
 };
 
 
