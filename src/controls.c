@@ -130,7 +130,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 				return;
 			};
 			if(importing == true){
-				importing = false;
 				importStructure(clickX, clickY);
 				return;
 			};
