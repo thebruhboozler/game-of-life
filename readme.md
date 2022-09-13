@@ -19,7 +19,6 @@ Right clicking will reveal a pop up menu which will have various options
 
 
 *import*: select a file in which a sturcture is stored then click on the grid to place the structure.
-(*warning*: this clears a rectangular area to create space for the structure,  this happens even if the structure isn't rectangular , so keep in mind the when importing a large structe smaller structures within its corner will be deleted)
 
 *export*: left click twice on different points and save a .txt file containing various numbers.
     (the first two numbers in the file are width and length of the selected area in terms of sqaures. the rest are indexes of all alive cells within the region.)
