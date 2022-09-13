@@ -248,10 +248,10 @@ void drawWaypoints(){
 		float onScreenX = visibleWaypoints[i]->x - cameraX;
 		float onScreenY = visibleWaypoints[i]->y - cameraY;
 
-		float lx = onScreenX - 9;
-		float uy = onScreenY + 21;
-		float ly = onScreenY - 9;
-		float rx = onScreenX + 9;
+		float lx = onScreenX - 9 *(squareSize * 0.1);
+		float uy = onScreenY + 21*(squareSize * 0.1);
+		float ly = onScreenY - 9 *(squareSize * 0,1);
+		float rx = onScreenX + 9 *(squareSize * 0.1);
 
 		float clx = 2*lx/windowW;
 		float cuy = 2*uy/windowH;
