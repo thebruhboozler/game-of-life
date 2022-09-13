@@ -2,11 +2,13 @@
 #include "misc.h"
 #include "chunkSys.h"
 #include "utils.h"
+#include "commands.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 
 extern int windowW; // width and height of the window
@@ -33,12 +35,14 @@ void display(); // manages the display
 char* generateCoordinateString();   // generates the coordinate string
 char* generateTurnNumString();  //  generates the turn numString
 void helpMenu(); // displays help text
+void drawWaypoints();
 
 
 void display(){
 
 	drawGrid();
 	drawCells();
+	drawWaypoints();
 
 	drawText(generateCoordinateString(),30,30,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);   // Drawwing the coordinates and turns to the screen
 	drawText(generateTurnNumString(),30,55,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);
@@ -216,6 +220,59 @@ void drawSquare(int x,int y,int sizeX,int sizeY){
 	glVertex2f(cx+xsize,cy-ysize);
 	glVertex2d(cx+xsize,cy);
 	glEnd();
+};
+
+void drawWaypoints(){
+
+	//static variables to keep track of color which will wave
+	// r = 0* , g = 45* and b = 90*
+	static float rStart = 0 , gStart =  0.785398 ,bStart = 1.5708;
+
+
+	// 1 degree in radians is added to each one of them
+	rStart += 2 * 0.0174532925;
+	gStart += 1.25 * 0.0174532925;
+	bStart += 0.5 * 0.0174532925;
+
+
+	float r = fabs(sin(rStart)) , g = fabs(sin(gStart)) , b = fabs(sin(bStart));
+
+	int len;
+
+	waypoint** visibleWaypoints = getVisibleWaypoints(&len);
+
+	glColor3f(r ,g ,b);
+	
+	for(int i = 0; i < len; i++){
+
+		float onScreenX = visibleWaypoints[i]->x - cameraX;
+		float onScreenY = visibleWaypoints[i]->y - cameraY;
+
+		float lx = onScreenX - 9;
+		float uy = onScreenY + 21;
+		float ly = onScreenY - 9;
+		float rx = onScreenX + 9;
+
+		float clx = 2*lx/windowW;
+		float cuy = 2*uy/windowH;
+		float cly = 2*ly/windowH;
+		float crx = 2*rx/windowW;
+
+		float cx = 2*onScreenX/windowW;
+		float cy = 2*onScreenY/windowH;
+
+		glBegin(GL_POLYGON);
+		glVertex2f(clx,cy);
+		glVertex2f(cx,cuy);
+		glVertex2f(crx,cy);
+		glVertex2f(cx,cly);
+		glEnd();
+		
+	};
+
+	glColor3f(0,0,0);
+
+	free(visibleWaypoints);
 };
 
 char* generateCoordinateString(){

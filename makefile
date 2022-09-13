@@ -5,7 +5,7 @@ CFLAGS = -ggdb3 -Og
 CFLAGS += $(shell pkg-config --cflags gtk+-3.0 gl glfw3)
 
 LDFLAGS = 
-LDFLAGS += $(shell pkg-config --libs gtk+-3.0 gl glfw3) -lglut
+LDFLAGS += $(shell pkg-config --libs gtk+-3.0 gl glfw3) -lglut -lm
 
 .PHONY: all clean
 

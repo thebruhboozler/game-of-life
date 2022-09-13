@@ -3,7 +3,6 @@
 #include "gtk/gtk.h"
 #include "utils.h"
 #include "game.h"
-
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -37,6 +36,8 @@ void addWaypoint(void);
 void clearWaypoint(void);
 void createFile(int startX, int startY, int endX, int endY);
 void importStructure(int x , int y);
+waypoint** getVisibleWaypoints(int *len);
+
 
 void import(void){
 	// choose a file to read from
@@ -309,4 +310,25 @@ void clearWaypoint(void){
 
 	numOfWaypoints = 0;
 	currentWaypoint = 0;
+};
+
+waypoint** getVisibleWaypoints(int *len){
+
+	waypoint* tmp [256];
+
+	int count = 0;
+
+	for(int i = 0; i < numOfWaypoints;i++){
+
+		if(waypoints[i].x >= cameraX - windowW * 0.5 && waypoints[i].x <= cameraX + windowW * 0.5 && waypoints[i].y <= cameraY + windowH * 0.5 && waypoints[i].y >= cameraY - windowH * 0.5)
+			tmp[count++] = &waypoints[i];
+	};
+
+	waypoint** result = (waypoint**) calloc(count , sizeof(waypoint**));
+
+	for(int i = 0 ; i < count ; i++) result[i] = tmp[i];
+
+	*len = count;
+	
+	return result;
 };
