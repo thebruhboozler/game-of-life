@@ -124,7 +124,7 @@ void importStructure(int x , int y){
 	
 		if(!tmpInitialized) tmpInitialized = true, tmp = findCordChunk( targetX , targetY);
 
-		if(tmp != NULL && tmp->x != targetX && tmp->y != targetY) tmp = findCordChunk( targetX , targetY);
+		if(tmp != NULL && (tmp->x != targetX || tmp->y != targetY)) tmp = findCordChunk( targetX , targetY);
 
 		if(tmp == NULL){
 			//createChunk
