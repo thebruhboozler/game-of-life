@@ -109,7 +109,17 @@ turnOn:
 
 turnOff:
 
-	for(int i = indexOfIndex ; i < c->numOfCells; i++) c->aliveCells[i] = c->aliveCells[i + 1];  
+	for(int i = 0; i < c->numOfCells;i++){
+		if(c->aliveCells[i] != index) continue;
 
-	c->numOfCells--;
+		int k = 0;
+		for(int j = 0; j < c->numOfCells;j++){
+
+			if(c->aliveCells[j] == index) continue;
+
+			c->aliveCells[k++] = c->aliveCells[j];
+		};
+		c->numOfCells--;
+		return;
+	};
 };
