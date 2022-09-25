@@ -103,6 +103,7 @@ void drawCells(){
 
 
 void drawGrid(){
+	
 	int shiftX = (-cameraX)%squareSize; //calculate offset of the camrea to grid
 	int shiftY = (-cameraY)%squareSize;
 

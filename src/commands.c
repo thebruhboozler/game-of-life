@@ -3,6 +3,7 @@
 #include "gtk/gtk.h"
 #include "utils.h"
 #include "game.h"
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>

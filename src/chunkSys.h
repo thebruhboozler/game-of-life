@@ -1,6 +1,8 @@
 #ifndef _CHUNKSYS_
 #define _CHUNKSYS_
 
+#include <stdbool.h>
+
 #define chunkSize 10000
 
 #define startingChunkSize 256
@@ -12,8 +14,10 @@
 #define hashSize 1024
 
 typedef struct chunk{
-	int x,y,numOfCells,cellArrSize,lastUpdated;
+	int x,y,numOfCells,cellArrSize,lastUpdated,lastUpSized;
+	bool upSized;
 	unsigned short* aliveCells;
+	unsigned short* prevTurn;
 	struct chunk* neighbours[8];
 }chunk;
 

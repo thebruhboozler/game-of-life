@@ -15,6 +15,8 @@ int numOfTurns = 0;
 void playTurn();
 void updateChunk(cordentry* chunk);
 void toggleCell(chunk* c,int index, int action);
+int findIndex(chunk* c, int index);
+
 
 void playTurn(){
 	if(!paused) return;
@@ -39,65 +41,75 @@ void updateChunk(cordentry* chunk){
 		if(chunk->segment->lastUpdated == 5) deleteChunk(chunk);
 		return;
 	};
+
+};
+
+int findIndex(chunk* c, int index){
+
+	int lowerIndex = 0;
+
+	int upperIndex = c->numOfCells;
+
+
+	while(true){
+
+		int currentIndex = (lowerIndex + upperIndex) / 2;
+
+		upperIndex -= (c->aliveCells[currentIndex] > index) * currentIndex;
+		lowerIndex += ((c->aliveCells[currentIndex] < index) * currentIndex) + (currentIndex == 0);
+
+		if(c->aliveCells[currentIndex] == index) return currentIndex;
+
+		if(upperIndex <= lowerIndex) return indexNotFound;
+	};
+
 };
 
 
 void toggleCell(chunk* c,int index, int action){
+	
+	int indexOfIndex = findIndex(c , index);
 
 	switch(action){
 		case absoluteOn:
-			goto TurnOn;
+			if(indexOfIndex == indexNotFound) goto turnOn;
+			break;
 		case absoluteOff:
-			goto TurnOff;
+			if(indexOfIndex != indexNotFound) goto turnOff;
+			break;
+		default:
+			if(indexOfIndex == indexNotFound) goto turnOn;
+			else goto turnOff;
+			break;
 	};
 
 
-	for(int i = 0; i < c->numOfCells;i++){
-		if(c->aliveCells[i] != index) continue;
+turnOn:
 
-		int k = 0;
-		for(int j = 0; j < c->numOfCells;j++){
+	c->numOfCells++;
 
-			if(c->aliveCells[j] == index) continue;
+	if(c->numOfCells >= c->cellArrSize){
+		c->cellArrSize *= 2;
+		c->aliveCells = realloc((void*) c-> aliveCells, c->cellArrSize);
+		c->prevTurn = realloc((void*) c-> prevTurn , c->cellArrSize);
+		c->upSized = true;
 
-			c->aliveCells[k++] = c->aliveCells[j];
-		};
-		c->numOfCells--;
-		return;
+		for(int i = c->numOfCells ; i < c->cellArrSize ; i++) c->aliveCells[i] = 0, c->prevTurn[i] = 0;
 	};
 
-	if(c->numOfCells >= c->cellArrSize) c->cellArrSize*= 2 , c->aliveCells = realloc(c->aliveCells,c->cellArrSize);
+	int k;
 
-	c->aliveCells[c->numOfCells++] = index;
+	for( k = 0; k < c->numOfCells ; k++) if(c->aliveCells[k] > index) break;
+
+	for(int i = c->numOfCells ; i > k; i--) c->aliveCells[i] = c->aliveCells[i - 1];
+
+	c->aliveCells[k] = index;
 
 	return;
 
-TurnOn:
+turnOff:
 
-	for(int i = 0; i < c->numOfCells; i++)
-		if(index == c->aliveCells[i]) return;
+	for(int i = indexOfIndex ; i < c->numOfCells; i++) c->aliveCells[i] = c->aliveCells[i + 1];  
 
-	if(c->numOfCells >= c->cellArrSize) c->cellArrSize*= 2 , c->aliveCells = realloc(c->aliveCells,c->cellArrSize);
-
-	c->aliveCells[c->numOfCells++] = index;
-
-	return;
-
-TurnOff:
-
-
-	for(int i = 0; i < c->numOfCells;i++){
-		if(c->aliveCells[i] != index) continue;
-
-		int k = 0;
-		for(int j = 0; j < c->numOfCells;j++){
-
-			if(c->aliveCells[j] == index) continue;
-
-			c->aliveCells[k++] = c->aliveCells[j];
-		};
-		c->numOfCells--;
-		return;
-	};
-
+	c->numOfCells--;
 };

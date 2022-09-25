@@ -7,8 +7,12 @@
 #define absoluteOn 1
 #define absoluteOff 2
 
+#define indexNotFound (chunkLength*chunkLength) + 1
+
 void playTurn();
 void toggleCell(chunk* c,int index, int action);
+
+
 
 
 #endif
