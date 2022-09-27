@@ -10,7 +10,6 @@
 #include <string.h>
 
 
-extern node* head;
 extern int chunkNum;
 extern cordentry *hashTable[hashSize];
 extern int cameraX;

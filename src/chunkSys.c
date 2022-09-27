@@ -206,6 +206,9 @@ void deleteEntry(int x, int y){
 		hashTable[slot] = temp->next; 
 	};
 
+	free(temp->segment->aliveCells);
+	free(temp->segment->prevTurn);
+	free(temp->segment);
 	free(temp);
 };
 
