@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
 
 
 extern cordentry* hashTable[hashSize];
