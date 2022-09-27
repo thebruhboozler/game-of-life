@@ -247,9 +247,7 @@ void createFile(int startX,int startY, int endX, int endY){
 
 			fprintf(fp,"%hu ", (unsigned short)((selectedY - 1)* squareWidth + selectedX)); 
 		};
-
 	};
-
 	fclose(fp);
 };
 
@@ -302,13 +300,11 @@ void help(void){
 };
 
 void addWaypoint(void){
-
 	waypoints[numOfWaypoints].x = cameraX;
 	waypoints[numOfWaypoints++].y = cameraY;
 };
 
 void clearWaypoint(void){
-
 	numOfWaypoints = 0;
 	currentWaypoint = 0;
 };

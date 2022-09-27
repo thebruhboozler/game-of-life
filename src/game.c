@@ -41,7 +41,6 @@ void updateChunk(cordentry* chunk){
 		if(chunk->segment->lastUpdated == 5) deleteChunk(chunk);
 		return;
 	};
-
 };
 
 int findIndex(chunk* c, int index){
