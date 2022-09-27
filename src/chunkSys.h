@@ -21,13 +21,6 @@ typedef struct chunk{
 	struct chunk* neighbours[8];
 }chunk;
 
-
-typedef struct node{
-	struct node* next;
-	struct node* prev;
-	chunk* segment;
-}node;
-
 typedef struct cordentry{
 	int x,y;
 	chunk*  segment;
