@@ -294,7 +294,6 @@ void teleport(void){
 };
 
 void help(void){
-
 	helpClicked = true;
 };
 

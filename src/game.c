@@ -81,12 +81,9 @@ void toggleCell(chunk* c,int index, int action){
 			break;
 	};
 
-
 turnOn:
 
-	c->numOfCells++;
-
-	if(c->numOfCells >= c->cellArrSize){
+	if(c->numOfCells == c->cellArrSize){
 		c->cellArrSize *= 2;
 		c->aliveCells = realloc((void*) c-> aliveCells, c->cellArrSize);
 		c->prevTurn = realloc((void*) c-> prevTurn , c->cellArrSize);
@@ -101,23 +98,14 @@ turnOn:
 
 	for(int i = c->numOfCells ; i > k; i--) c->aliveCells[i] = c->aliveCells[i - 1];
 
+	c->numOfCells++;
+
 	c->aliveCells[k] = index;
 
 	return;
 
 turnOff:
 
-	for(int i = 0; i < c->numOfCells;i++){
-		if(c->aliveCells[i] != index) continue;
-
-		int k = 0;
-		for(int j = 0; j < c->numOfCells;j++){
-
-			if(c->aliveCells[j] == index) continue;
-
-			c->aliveCells[k++] = c->aliveCells[j];
-		};
-		c->numOfCells--;
-		return;
-	};
+	for(int i = indexOfIndex ; i < c->numOfCells; i++) c->aliveCells[i] = c->aliveCells[i + 1];
+	c->numOfCells--;
 };
