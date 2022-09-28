@@ -32,7 +32,6 @@ void playTurn(){
 			e = e->next;
 		};
 	};
-
 };
 
 void updateChunk(cordentry* chunk){
@@ -43,6 +42,18 @@ void updateChunk(cordentry* chunk){
 		return;
 	};
 	//down size chunks which have been out of their range for 5 turns
+	if(chunk->segment->upSized) chunk->segment->upSized = false;
+	else{
+		chunk->segment->lastUpSized--;
+		if(chunk->segment->lastUpSized == 0){
+			
+			if(chunk->segment->numOfCells < chunk->segment->cellArrSize / 2 && chunk->segment->cellArrSize > startingChunkSize + startingChunkSize/2){
+				chunk->segment->cellArrSize /= 2;
+				chunk->segment->aliveCells = realloc(chunk->segment->aliveCells, chunk->segment-> cellArrSize);
+			};
+		};
+	};
+
 };
 // standard binary search algorithm
 int findIndex(chunk* c, int index){
