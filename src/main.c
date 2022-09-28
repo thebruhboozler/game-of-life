@@ -36,7 +36,7 @@ int main(int argc,char** argv){
 	if (!window){
 		glfwTerminate();
 		return -1;
-	}
+	};
 
 	glfwMakeContextCurrent(window);
 

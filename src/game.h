@@ -3,11 +3,18 @@
 
 #include "chunkSys.h"
 
+//absoluteOn - makes sure the index which is given is in the array 
+//absoluteOff - makes sure the index which is given isnt in the array
+//cellToggle - toggles the index
+
 #define cellToggle 0
 #define absoluteOn 1
 #define absoluteOff 2
 
 #define indexNotFound (chunkLength*chunkLength) + 1
+#define upSizeLimit 5
+#define deadChunkLimit 5
+
 
 void playTurn();
 void toggleCell(chunk* c,int index, int action);
