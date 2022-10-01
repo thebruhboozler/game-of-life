@@ -98,7 +98,8 @@ void drawCells(){
 
 			drawSquare(cpx,cpy,squareSize,squareSize); 
 		};
-	}
+	};
+	free(screenChunks);
 };
 
 

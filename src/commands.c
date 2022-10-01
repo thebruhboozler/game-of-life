@@ -141,6 +141,7 @@ void importStructure(int x , int y){
 		token = strtok(NULL," ");
 	};
 	free(input);
+	free(token);
 };
 
 void exportf(void){
