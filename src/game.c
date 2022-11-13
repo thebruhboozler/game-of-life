@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <stdio.h>
 
 extern cordentry* hashTable[hashSize];
 extern bool paused;
@@ -58,25 +58,19 @@ void updateChunk(cordentry* chunk){
 // standard binary search algorithm
 int findIndex(chunk* c, int index){
 
-	int lowerIndex = 0;
+	int lowerIndex = 0 , upperIndex = c->numOfCells;
+	
+	while(lowerIndex <= upperIndex){
 
-	int upperIndex = c->numOfCells;
-
-
-	while(true){
-
-		int currentIndex = (lowerIndex + upperIndex) / 2;
-
-		upperIndex -= (c->aliveCells[currentIndex] > index) * currentIndex;
-		lowerIndex += ((c->aliveCells[currentIndex] < index) * currentIndex) + (currentIndex == 0);
+		int currentIndex = (lowerIndex + upperIndex)/2;
 
 		if(c->aliveCells[currentIndex] == index) return currentIndex;
-
-		if(upperIndex <= lowerIndex) return indexNotFound;
+		else if( index > c->aliveCells[currentIndex]) lowerIndex = currentIndex + 1;
+		else upperIndex = currentIndex - 1;
 	};
 
+	return indexNotFound;
 };
-
 
 void toggleCell(chunk* c,int index, int action){
 	//to speed up the index finding	
@@ -97,7 +91,7 @@ void toggleCell(chunk* c,int index, int action){
 
 turnOn:
 	//up size the memory if the number of cells gets too big 
-	if(c->numOfCells == c->cellArrSize){
+	if(c->numOfCells >= c->cellArrSize){
 		c->cellArrSize *= 2;
 		c->aliveCells = realloc((void*) c-> aliveCells, c->cellArrSize);
 		c->prevTurn = realloc((void*) c-> prevTurn , c->cellArrSize);
@@ -113,14 +107,16 @@ turnOn:
 
 	for(int i = c->numOfCells ; i > k; i--) c->aliveCells[i] = c->aliveCells[i - 1];
 
-	c->numOfCells++;
-
 	c->aliveCells[k] = index;
+
+	c->numOfCells++;
 
 	return;
 
 turnOff:
 
-	for(int i = indexOfIndex ; i < c->numOfCells; i++) c->aliveCells[i] = c->aliveCells[i + 1];
+	for(int i = indexOfIndex ; i < c->numOfCells ;i++) c->aliveCells[i] = c->aliveCells[i + 1];
 	c->numOfCells--;
+
+	return;
 };

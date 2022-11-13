@@ -19,3 +19,4 @@ GameOfLife.out: $(OBJECT_FILES)
 
 clean:
 	rm src/*.o
+

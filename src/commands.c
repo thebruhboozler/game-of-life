@@ -107,9 +107,8 @@ void importStructure(int x , int y){
 	bool tmpInitialized = false;
 	token = strtok(NULL," ");
 
-
 	while(token){
-		
+
 		int index = atoi(token);
 
 		int cellCordX = index % width; // get x position
@@ -275,7 +274,10 @@ void clearAll(void){
 		while(e->next != NULL) e = e->next;
 
 		do{
-			cordentry* tmp = e -> prev; 
+			cordentry* tmp = e -> prev;
+			free(e->segment->aliveCells);
+			free(e->segment->prevTurn);
+			free(e->segment);
 			free(e);
 			e = tmp;
 		}while(e != NULL);     

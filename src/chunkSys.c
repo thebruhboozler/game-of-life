@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
  
 
 extern int cameraX;
@@ -46,6 +47,7 @@ chunk* createChunk(int x,int y){
 	for(int i = 0; i < 8; i++) tmp->neighbours[i] = noNeighbour;  // by default no neigbours
 
 	int rightX = x + chunkLength;
+
 	int leftX = x - chunkLength;    // neighbour x and y cords
 
 	int upperY = y + chunkLength;
@@ -120,10 +122,8 @@ void handleClicks(int x ,int y){
 
 	int sx,sy;
 	screenToGlobaPixelCords( x , y , &sx , &sy);
-
 	int squareX, squareY ;
 	globalPcordsToScords( sx , sy , &squareX , &squareY);
-
 	int targetX,targetY;
 	calcChunkCord( squareX , squareY , &targetX , &targetY);
 
@@ -138,11 +138,9 @@ void handleClicks(int x ,int y){
 		return;
 	};
 
-	chunk* newChunk = createChunk(targetX,targetY);
-
-	enterCord(newChunk);
-
-	toggleCell(newChunk,index,absoluteOn);
+	clickedChunk = createChunk(targetX,targetY);
+	enterCord(clickedChunk);
+	toggleCell(clickedChunk,index,absoluteOn);
 };
 
 void enterCord(chunk *c){

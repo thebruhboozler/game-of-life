@@ -2,6 +2,7 @@
 #include "chunkSys.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 
 extern int squareSize;
