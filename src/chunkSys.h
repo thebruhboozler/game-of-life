@@ -7,7 +7,7 @@
 
 #define startingChunkSize 256
 
-#define chunkLength 100
+#define chunkLength 256 
 
 #define noNeighbour NULL
 

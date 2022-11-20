@@ -118,15 +118,17 @@ void importStructure(int x , int y){
 		int globalCellCordY = gsy - cellCordY;
 
 		int targetX ,targetY;
-
 		calcChunkCord( globalCellCordX , globalCellCordY , &targetX , &targetY);
-	
+
+		//if its the first time in the loop find the chunk	
 		if(!tmpInitialized) tmpInitialized = true, tmp = findCordChunk( targetX , targetY);
 
+		// if the calculated coordinates from index are different from the cooridnates of the chunk currently loaded
+		// then find the new chunk
 		if(tmp != NULL && (tmp->x != targetX || tmp->y != targetY)) tmp = findCordChunk( targetX , targetY);
 
+		// if there is no chunk create one 
 		if(tmp == NULL){
-			//createChunk
 			tmp = createChunk(targetX, targetY);
 			enterCord(tmp);
 		};

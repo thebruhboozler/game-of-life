@@ -1,7 +1,7 @@
 SOURCE_FILES = src/main.c src/renderSys.c src/controls.c src/menu.c src/commands.c src/chunkSys.c src/game.c src/utils.c
 OBJECT_FILES = $(patsubst %.c, %.o, $(SOURCE_FILES))
 
-CFLAGS = -ggdb3 -Og 
+CFLAGS =  
 CFLAGS += $(shell pkg-config --cflags gtk+-3.0 gl glfw3)
 
 LDFLAGS = 
