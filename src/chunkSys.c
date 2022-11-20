@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
  
 
 extern int cameraX;
@@ -126,6 +125,7 @@ void handleClicks(int x ,int y){
 	globalPcordsToScords( sx , sy , &squareX , &squareY);
 	int targetX,targetY;
 	calcChunkCord( squareX , squareY , &targetX , &targetY);
+
 
 	int ix = squareX - targetX;
 	int iy = targetY - squareY;

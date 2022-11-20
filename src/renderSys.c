@@ -81,8 +81,8 @@ void drawCells(){
 		for(int j = 0; j < visableChunk->numOfCells; j++){
 			int cellIndex = visableChunk->aliveCells[j];    // get the index of a cell
 
-			int scx = cellIndex % chunkLength;  // get the x position of the cell with respect to squareSize 
 			int scy = (int)(roundUp(cellIndex,chunkLength)-chunkLength)/chunkLength;    // get the y position
+			int scx = (cellIndex - ((scy - 1) * chunkLength)) % (chunkLength + 1);  // get the x position of the cell with respect to squareSize 
 
 			int pcx = sx + squareSize * scx;    // get their on screen cordinates in pixels
 			int pcy = sy - squareSize * scy;
@@ -153,10 +153,13 @@ void drawMenu(int x,int y){ // draws menu when you right click
 	float lcx = (x+menuSize) - windowW/2; // translate right x positon
 	lcx = 2*lcx/windowW;
 
+	float r,g,b;
+
 	for(int i = 0 ; i < menuOptionsNum;i++){
 
 		if(xpos > x && xpos < x + menuSize && ypos > y && ypos  < y +menuSlotSize){
 			glColor3f(0.1,0.1,0.8);
+			r = 0.8 , g = 0.1 , b = 0.1;
 			drawSquare(x,y + 2,menuSize,menuSlotSize + 1);
 			glColor3f(1.0,1.0,1.0);
 		};
