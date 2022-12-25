@@ -44,9 +44,15 @@ void display(){
 	drawCells();
 	drawWaypoints();
 
-	drawText(generateCoordinateString(),30,30,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);   // Drawwing the coordinates and turns to the screen
-	drawText(generateTurnNumString(),30,55,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);
+	char* cords = generateCoordinateString();
+	char* turnNum = generateTurnNumString();
+
+	drawText(cords,30,30,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);   // Drawwing the coordinates and turns to the screen
+	drawText(turnNum,30,55,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);
 	
+	free((void*)cords);
+	free((void*)turnNum);
+
 	if(rightClicked) drawMenu(menuX,menuY); // drawing the menu if right clicked
 
 	if(helpClicked){
