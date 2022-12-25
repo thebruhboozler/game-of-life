@@ -38,10 +38,11 @@ chunk* createChunk(int x,int y){
 
 	tmp->x = x;
 	tmp->y = y;
-	tmp->upSized = false;
 	tmp->numOfCells = 0;
-	tmp->lastUpSized = 0;
+	tmp->underCapTurnNum = 0;
+	tmp->inactiveTurnNum = 0;
 	tmp->cellArrSize = startingChunkSize;   //set parameters
+
 
 	for(int i = 0; i < 8; i++) tmp->neighbours[i] = noNeighbour;  // by default no neigbours
 

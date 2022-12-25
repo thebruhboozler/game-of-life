@@ -1,8 +1,6 @@
 #ifndef _CHUNKSYS_
 #define _CHUNKSYS_
 
-#include <stdbool.h>
-
 #define chunkSize 10000
 
 #define startingChunkSize 256
@@ -14,8 +12,7 @@
 #define hashSize 1024
 
 typedef struct chunk{
-	int x,y,numOfCells,cellArrSize,lastUpdated,lastUpSized;
-	bool upSized;
+	int x,y,numOfCells,cellArrSize,underCapTurnNum,inactiveTurnNum;
 	unsigned short* aliveCells;
 	unsigned short* prevTurn;
 	struct chunk* neighbours[8];
@@ -30,9 +27,9 @@ typedef struct cordentry{
 
 
 chunk* findCordChunk(int x, int y);
+void handleClicks(int x ,int y);
 chunk** getVisableChunks(int* len);
 chunk* createChunk(int x,int y);
-void handleClicks(int x ,int y);
 void deleteChunk(cordentry* e);
 void enterCord(chunk* c);
 

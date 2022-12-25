@@ -1,19 +1,27 @@
 #include "chunkSys.h"
 #include "game.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
+
 
 extern cordentry* hashTable[hashSize];
 extern bool paused;
 
 int numOfTurns = 0;
+bool IndexCleared = true;
+int savedIndexes[indexLookUpSize] = {noCell};
+unsigned short checkedDeadCells[chunkLength*chunkLength/2];
+int deadCellNum = 0;
 
 
 void playTurn();
-void updateChunk(cordentry* chunk);
+void updateChunk(cordentry* checkedChunk);
 void toggleCell(chunk* c,int index, int action);
 int findIndex(chunk* c, int index);
+bool hasIndex(chunk *c , int index);
+bool trimChunk(cordentry* entry);
 
 
 void playTurn(){
@@ -33,26 +41,27 @@ void playTurn(){
 	};
 };
 
-void updateChunk(cordentry* chunk){
-	// delete chunks which have not had a cell for 5 turns
-	if(chunk->segment->numOfCells == 0){
-		chunk->segment->lastUpdated++;
-		if(chunk->segment->lastUpdated == deadChunkLimit) deleteChunk(chunk);
-		return;
-	};
-	//down size chunks which have been out of their range for 5 turns
-	if(chunk->segment->upSized) chunk->segment->upSized = false;
-	else{
-		chunk->segment->lastUpSized--;
-		if(chunk->segment->lastUpSized == 0){
-			
-			if(chunk->segment->numOfCells < chunk->segment->cellArrSize / 2 && chunk->segment->cellArrSize > startingChunkSize + startingChunkSize/2){
-				chunk->segment->cellArrSize /= 2;
-				chunk->segment->aliveCells = realloc(chunk->segment->aliveCells, chunk->segment-> cellArrSize);
-			};
-		};
-	};
+void updateChunk(cordentry* checkedChunk){
 
+	chunk* updatingChunk = checkedChunk->segment;
+
+	if(!trimChunk(checkedChunk)) return;
+
+	//swap current turn and new turn
+
+	updatingChunk->aliveCells =  (unsigned short*)((unsigned long) updatingChunk->aliveCells ^ (unsigned long) updatingChunk->prevTurn);
+	updatingChunk->prevTurn =  (unsigned short*)((unsigned long) updatingChunk->prevTurn ^ (unsigned long)updatingChunk->aliveCells);
+	updatingChunk->aliveCells =  (unsigned short*)((unsigned long) updatingChunk->aliveCells ^ (unsigned long) updatingChunk->prevTurn);
+	
+
+	// clear index buffer
+	for(int i = 0; i < indexLookUpSize; i++) savedIndexes[i] = noCell;
+	deadCellNum = 0; 
+
+	//check only the alive cells and their neighbours 
+
+
+	//check alive cells and turn off the ones which 
 };
 // standard binary search algorithm
 int findIndex(chunk* c, int index){
@@ -93,11 +102,8 @@ turnOn:
 	if(c->numOfCells >= c->cellArrSize){
 		c->cellArrSize *= 2;
 		c->aliveCells = realloc((void*) c-> aliveCells, c->cellArrSize);
-		c->prevTurn = realloc((void*) c-> prevTurn , c->cellArrSize);
-		c->upSized = true;
-		c->lastUpSized = upSizeLimit;
-
-		for(int i = c->numOfCells ; i < c->cellArrSize ; i++) c->aliveCells[i] = 0, c->prevTurn[i] = 0;
+		c->underCapTurnNum = 0;
+		for(int i = c->numOfCells ; i < c->cellArrSize ; i++) c->aliveCells[i] = 0;
 	};
 
 	int k;
@@ -118,4 +124,51 @@ turnOff:
 	c->numOfCells--;
 
 	return;
+};
+
+inline bool hasIndex(chunk *c ,int index){
+
+	int slot = hash(index , index) % indexLookUpSize ;
+
+	int qIndex = savedIndexes[slot];
+
+	if(qIndex != noCell){
+		if(qIndex == index) return true;
+		else return (findIndex(c , index) != indexNotFound);
+	};
+
+	savedIndexes[slot] = index;
+
+};
+
+bool trimChunk(cordentry* entry){
+
+	//downsize if the current number of cells has been less than half of the array capacity for more than limit number turns 
+	//delete the chunk if its been empty for the previous turns 
+
+	chunk* checkedChunk = entry->segment;
+
+	if(checkedChunk->numOfCells == underCapLimit){
+		checkedChunk->cellArrSize /= 2;
+		checkedChunk->aliveCells = realloc((void*)checkedChunk->aliveCells, checkedChunk->cellArrSize * sizeof(unsigned short)); 
+		checkedChunk->prevTurn = realloc((void*)checkedChunk->prevTurn, checkedChunk->cellArrSize * sizeof(unsigned short));
+		
+		checkedChunk->underCapTurnNum = 0 ; 
+		return true; 
+	}
+
+	if(checkedChunk->numOfCells < checkedChunk->cellArrSize && checkedChunk->numOfCells >= startingChunkSize) {
+		checkedChunk->underCapTurnNum++;
+		return true;
+	};
+
+	if(checkedChunk->numOfCells != 0) return true;
+
+	if(checkedChunk->inactiveTurnNum == emptyTurnLimit){
+		deleteChunk(entry);
+		return false;
+	};
+
+	checkedChunk->inactiveTurnNum++;
+	return true; 
 };

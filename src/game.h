@@ -12,8 +12,11 @@
 #define absoluteOff 2
 
 #define indexNotFound (chunkLength*chunkLength) + 1
-#define upSizeLimit 5
-#define deadChunkLimit 5
+#define underCapLimit 5
+#define emptyTurnLimit 5
+
+#define indexLookUpSize 128
+#define noCell -1
 
 
 void playTurn();
