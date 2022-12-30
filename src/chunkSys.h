@@ -1,11 +1,11 @@
 #ifndef _CHUNKSYS_
 #define _CHUNKSYS_
 
-#define chunkSize 10000
-
 #define startingChunkSize 256
 
 #define chunkLength 256 
+
+#define chunkSize chunkLength* chunkLength
 
 #define noNeighbour NULL
 

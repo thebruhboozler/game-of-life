@@ -16,6 +16,7 @@ void globalPcordsToScords(int gpx , int gpy , int* gsx , int *gsy); // converts 
 void screenToGlobaPixelCords(int x , int y, int* gx , int * gy); // take the coords from screen space and converts them to global space
 unsigned int hash(int x, int y); 
 static inline unsigned int advanceNum(unsigned int  seed);
+int calculateNeighbourIndex(int index , int dir);
 void calcChunkCord(int gsx , int gsy , int* gcx , int* gcy);
 
 
@@ -83,4 +84,29 @@ void calcChunkCord(int gsx , int gsy , int* gcx , int* gcy){
 	*gcx = roundUp(gsx , chunkLength) - chunkLength;  	
 	*gcy = roundUp(gsy , chunkLength);
 
+};
+
+
+int calculateNeighbourIndex(int index , int dir){
+
+	switch(dir){
+		case upperLeft:
+			return index - chunkLength - 1;
+		case upper:
+			return index - chunkLength;
+		case upperRight:
+			return index - chunkLength + 1;
+		case left:
+			return index - 1;
+		case right:
+			return index + 1;
+		case lowerLeft:
+			return index + chunkLength - 1;
+		case lowerRight:
+			return index + chunkLength + 1;
+		case lower:
+			return index + chunkLength;
+		default:
+			return index;
+	};
 };

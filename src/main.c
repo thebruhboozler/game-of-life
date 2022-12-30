@@ -13,7 +13,6 @@ int windowH = 750;
 int cameraX = 0;
 int cameraY = 0;
 int squareSize = 10;
-extern int seed; 
 GLFWwindow* window;
 
 
