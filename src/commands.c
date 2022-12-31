@@ -59,6 +59,7 @@ void import(void){
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 	filename = gtk_file_chooser_get_filename (chooser);
 	imported = fopen(filename,"r");
+	free(filename);
 	gtk_widget_destroy (dialog);
 };
 
