@@ -19,6 +19,10 @@
 #define noCell -1
 
 
+#define prevBuff 0
+#define currBuff 1
+
+
 void playTurn();
 void toggleCell(chunk* c,int index, int action);
 
