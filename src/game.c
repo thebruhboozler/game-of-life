@@ -17,9 +17,9 @@ int savedIndexes[indexLookUpSize] = {noCell};
 void playTurn();
 void updateChunk(cordentry* checkedChunk);
 void toggleCell(chunk* c,int index, int action);
-int findIndex(chunk* c, int index);
-void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff , int* buffPos);
-bool hasIndex(chunk *c , int index);
+int findIndex(chunk* c, int index, int buffOption);
+void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff , int* buffPos, int option);
+bool hasIndex(chunk *c , int index, int option);
 bool trimChunk(cordentry* entry);
 
 
@@ -67,50 +67,24 @@ void updateChunk(cordentry* checkedChunk){
 
 	int nextTurnCellNum = 0;
 	
+	int directions[8] = {upperLeft , upper, upperRight , left , right , lowerLeft , lower , lowerRight}; 
+
 	//check alive cells and turn off
 	for(int i = 0; i < updatingChunk->numOfCells; i++){
 
 		int currentIndex = updatingChunk->aliveCells[i];
 		int aliveNeighboursNum = 0 ;
 
-		int checkIndex = calculateNeighbourIndex(currentIndex , upperLeft);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
-		
-		checkIndex = calculateNeighbourIndex(currentIndex , upper);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
+		for(int j = 0; j < sizeof(directions) ; j++){
 
-		checkIndex = calculateNeighbourIndex(currentIndex , upperRight);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
-	
-		checkIndex = calculateNeighbourIndex(currentIndex , left);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
+			int checkIndex = calculateNeighbourIndex(currentIndex ,directions[j]);
+			if(!hasIndex(updatingChunk , directions[j], prevBuff)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
+			else aliveNeighboursNum++;
 
-		checkIndex = calculateNeighbourIndex(currentIndex , right);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
-		
-		checkIndex = calculateNeighbourIndex(currentIndex , lowerLeft);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
-		
-		checkIndex = calculateNeighbourIndex(currentIndex , lowerRight);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
-		
-		checkIndex = calculateNeighbourIndex(currentIndex , lower);
-		if(!hasIndex(updatingChunk ,checkIndex)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-		else aliveNeighboursNum++;
-	
+		};
 
 		// the case when the cell survives 
-		if(aliveNeighboursNum == 2 || aliveNeighboursNum == 3){
-			updatingChunk->aliveCells[nextTurnCellNum++] = currentIndex;
-			continue;
-		};
+		if(aliveNeighboursNum == 2 || aliveNeighboursNum == 3) updatingChunk->aliveCells[nextTurnCellNum++] = currentIndex,nextTurnCellNum++;
 
 	};
 
@@ -121,21 +95,8 @@ void updateChunk(cordentry* checkedChunk){
 		
 		int aliveNeighboursNum = 0;
 
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , upperLeft) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , upper) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , upperRight) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , left) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , right) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , lowerLeft) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , lower) , prevBuff)) aliveNeighbours++;
-
-		if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , lowerRight) , prevBuff)) aliveNeighbours++;
+		for(int j = 0 ; j < sizeof(directions); j++)
+			if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , directions[j]) , prevBuff)) aliveNeighboursNum++;
 
 		if(aliveNeighboursNum == 3){
 			toggleCell(updatingChunk , currentIndex , absoluteOn);
@@ -221,7 +182,7 @@ turnOff:
 
 inline bool hasIndex(chunk *c ,int index , int option){
 
-	int slot = hash(index , index) % indexLookUpSize ;
+	int slot = hash(index , index) % indexLookUpSize;
 
 	int qIndex = savedIndexes[slot];
 
@@ -253,7 +214,7 @@ bool trimChunk(cordentry* entry){
 		return true; 
 	}
 
-	if(checkedChunk->numOfCells < checkedChunk->cellArrSize && checkedChunk->numOfCells >= startingChunkSize) {
+	if(checkedChunk->numOfCells < checkedChunk->cellArrSize/2 && checkedChunk->numOfCells >= startingChunkSize) {
 		checkedChunk->underCapTurnNum++;
 		return true;
 	};
@@ -271,35 +232,13 @@ bool trimChunk(cordentry* entry){
 
 void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff ,int* buffPos, int option){
 
-	int neighbours[8];
-
-	int uLNeighbour = calculateNeighbourIndex(index, upperLeft);
-	neighbours[upperLeft] = ( uLNeighbour >= 0 && uLNeighbour != comparisonIndex && hasIndex(c , uLNeighbour, option)) ? uLNeighbour : noCell;
-
-	int uNeighbour = calculateNeighbourIndex(index, upper);
-	neighbours[upper] = ( uNeighbour >= 0 && uNeighbour != comparisonIndex && hasIndex(c , uNeighbour, option)) ? uNeighbour : noCell;
-
-	int uRNeighbour = calculateNeighbourIndex(index, upperRight);
-	neighbours[upperRight] = ( uRNeighbour >= 0 && uRNeighbour != comparisonIndex && hasIndex(c , uRNeighbour, option)) ? uRNeighbour : noCell;
-
-	int lNeighbour = calculateNeighbourIndex(index, right);
-	neighbours[left] = ( lNeighbour >= 0 && lNeighbour != comparisonIndex && hasIndex(c , lNeighbour, option)) ? lNeighbour : noCell;
-
-	int RNeighbour =  calculateNeighbourIndex(index, left);
-	neighbours[right] = ( RNeighbour >= 0 && RNeighbour != comparisonIndex && hasIndex(c , RNeighbour, option)) ? RNeighbour : noCell;
-
-	int lLNeighbour =  calculateNeighbourIndex(index, lowerLeft);
-	neighbours[lowerLeft] = ( lLNeighbour >= 0 && lLNeighbour != comparisonIndex && hasIndex(c , lLNeighbour, option)) ? lLNeighbour : noCell;
-
-	lNeighbour =  calculateNeighbourIndex(index, lower);
-	neighbours[lower] = ( lNeighbour >= 0 && lNeighbour != comparisonIndex && hasIndex(c , lNeighbour, option)) ? lNeighbour : noCell;
-
-	int lRNeighbour =  calculateNeighbourIndex(index, lowerRight);
-	neighbours[lowerRight] = ( lRNeighbour >= 0 && lRNeighbour != comparisonIndex && hasIndex(c , lRNeighbour, option)) ? lRNeighbour : noCell;
+	int neighbours[8] = {upperLeft , upper, upperRight , left , right , lowerLeft , lower , lowerRight}; 
 
 	for(int i = 0 ; i < 8 ; i++){
-		if(neighbours[i] == noCell || neighbours[i] <= comparisonIndex) continue;
-		buff[*buffPos++] = index;
-		return;
+		int currentNeighbour = calculateNeighbourIndex(neighbours[i], index);
+		if( currentNeighbour < 0) continue;
+		if( currentNeighbour < comparisonIndex && hasIndex(c,neighbours[i], option)) return;
 	};
+	buff[*buffPos++] = index;
+	return;
 };

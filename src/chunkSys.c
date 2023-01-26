@@ -111,6 +111,8 @@ chunk** getVisableChunks(int* len){
 
 	*len = chunkCount;  //set len
 
+	if(*len == 0) return NULL;
+
 	chunk** result = calloc(sizeof(chunk*),*len);
 
 	for(int i = 0 ; i < *len;i++) result[i] = tmp[i];   // copy results

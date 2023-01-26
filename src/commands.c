@@ -253,7 +253,6 @@ void createFile(int startX,int startY, int endX, int endY){
 	fclose(fp);
 };
 
-
 void clearAll(void){
 
 	GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
