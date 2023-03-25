@@ -17,15 +17,14 @@
 
 #define indexLookUpSize 128
 #define noCell -1
+#define midCell 10
 
-
-#define prevBuff 0
+#define nextBuff 0
 #define currBuff 1
 
 
 void playTurn();
 void toggleCell(chunk* c,int index, int action);
-
 
 
 

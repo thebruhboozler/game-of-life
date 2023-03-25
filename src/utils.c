@@ -2,6 +2,7 @@
 #include "chunkSys.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 
 extern int squareSize;
@@ -18,6 +19,7 @@ unsigned int hash(int x, int y);
 static inline unsigned int advanceNum(unsigned int  seed);
 int calculateNeighbourIndex(int index , int dir);
 void calcChunkCord(int gsx , int gsy , int* gcx , int* gcy);
+void printChunk(chunk *c);
 
 
 float roundUp(int numToRound, int multiple){    //rounds to the nearest multipe of a number
@@ -86,27 +88,14 @@ void calcChunkCord(int gsx , int gsy , int* gcx , int* gcy){
 
 };
 
+void printChunk(chunk *c){
 
-int calculateNeighbourIndex(int index , int dir){
 
-	switch(dir){
-		case upperLeft:
-			return index - chunkLength - 1;
-		case upper:
-			return index - chunkLength;
-		case upperRight:
-			return index - chunkLength + 1;
-		case left:
-			return index - 1;
-		case right:
-			return index + 1;
-		case lowerLeft:
-			return index + chunkLength - 1;
-		case lowerRight:
-			return index + chunkLength + 1;
-		case lower:
-			return index + chunkLength;
-		default:
-			return index;
-	};
+	printf("chunk: %p\n",c);
+	printf("chunkSize %d \n",c->numOfCells);
+	
+	printf("chunk Members ");
+
+	for(int i = 0; i <= c->numOfCells;i++) printf("%d ",c->aliveCells[i]);
+	printf("\n");
 };

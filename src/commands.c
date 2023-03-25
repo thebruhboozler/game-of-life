@@ -278,7 +278,7 @@ void clearAll(void){
 		do{
 			cordentry* tmp = e -> prev;
 			free(e->segment->aliveCells);
-			free(e->segment->prevTurn);
+			free(e->segment->nextTurn);
 			free(e->segment);
 			free(e);
 			e = tmp;

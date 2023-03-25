@@ -163,18 +163,17 @@ void drawMenu(int x,int y){ // draws menu when you right click
 
 	for(int i = 0 ; i < menuOptionsNum;i++){
 
+
+		r = g = b = 0;
+
 		if(xpos > x && xpos < x + menuSize && ypos > y && ypos  < y +menuSlotSize){
 			glColor3f(0.1,0.1,0.8);
 			r = 0.8 , g = 0.1 , b = 0.1;
 			drawSquare(x,y + 2,menuSize,menuSlotSize + 1);
-			glColor3f(1.0,1.0,1.0);
 		};
 
 		drawText(menuOptionsTxt[i],x+2,y + menuSlotSize,r,g,b,GLUT_BITMAP_9_BY_15);
-
-		r = 0;
-		g = 0;
-		b = 0;
+		glColor3f(1.0,1.0,1.0);
 
 		y+=menuSlotSize;    // move down the text
 

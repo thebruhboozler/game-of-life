@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 
 extern cordentry* hashTable[hashSize];
@@ -11,7 +12,7 @@ extern bool paused;
 
 int numOfTurns = 0;
 bool IndexCleared = true;
-int savedIndexes[indexLookUpSize] = {noCell};
+//int savedIndexes[indexLookUpSize] = {noCell};
 
 
 void playTurn();
@@ -19,8 +20,12 @@ void updateChunk(cordentry* checkedChunk);
 void toggleCell(chunk* c,int index, int action);
 int findIndex(chunk* c, int index, int buffOption);
 void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff , int* buffPos, int option);
-bool hasIndex(chunk *c , int index, int option);
+bool hasIndex(chunk *c , int index);
 bool trimChunk(cordentry* entry);
+int indexStatus(int index);
+void getNeighbours(int index, int* buffer);
+int calculateNeighbourIndex(int index , int dir);
+void subtractOverlap(int* iNeighbours,int *neighbourSize, int* dif, int diffSize);
 
 
 void playTurn(){
@@ -34,6 +39,7 @@ void playTurn(){
 		cordentry* e = hashTable[i];
 
 		while(e !=NULL){
+			e->segment->updated = false;
 			updateChunk(e);
 			e = e->next;
 		};
@@ -44,76 +50,87 @@ void updateChunk(cordentry* checkedChunk){
 
 	chunk* updatingChunk = checkedChunk->segment;
 
-	if(!trimChunk(checkedChunk)) return;
-
-	//swap current turn and new turn
-
-	updatingChunk->aliveCells =  (unsigned short*)((unsigned long) updatingChunk->aliveCells ^ (unsigned long) updatingChunk->prevTurn);
-	updatingChunk->prevTurn =  (unsigned short*)((unsigned long) updatingChunk->prevTurn ^ (unsigned long)updatingChunk->aliveCells);
-	updatingChunk->aliveCells =  (unsigned short*)((unsigned long) updatingChunk->aliveCells ^ (unsigned long) updatingChunk->prevTurn);
+//	if(!trimChunk(checkedChunk)) return;
+	int nextBuffCellNum = 0;
 
 
-	// clear index buffer
-	for(int i = 0; i < indexLookUpSize; i++) savedIndexes[i] = noCell;
 
-	int deadCellNum = 0; 
-	static unsigned short deadCells[chunkLength*chunkLength/2];
+	//go through the alive cells and update them 
+	
+	for(int i = 0 ; i < updatingChunk->numOfCells; i++){
 
-	//check only the alive cells and their neighbours 
+		int index = updatingChunk->aliveCells[i];
+		int iStatus = indexStatus(index);
 
-	//check the alive cells and change their dead neighbors 
-	//if the dead neighbors dont border at least one alive cell with an index which is less than the current one we are checking 
-	//move the cell to the dead cell buffer 
-
-	int nextTurnCellNum = 0;
-
-	int directions[8] = {upperLeft , upper, upperRight , left , right , lowerLeft , lower , lowerRight}; 
-
-	//check alive cells and turn off
-	for(int i = 0; i < updatingChunk->numOfCells; i++){
-
-		int currentIndex = updatingChunk->aliveCells[i];
-		int aliveNeighboursNum = 0 ;
-
-		for(int j = 0; j < sizeof(directions) ; j++){
-
-			int checkIndex = calculateNeighbourIndex(currentIndex ,directions[j]);
-			if(!hasIndex(updatingChunk , directions[j], prevBuff)) moveIndexToBuff(checkIndex , currentIndex, updatingChunk , deadCells, &deadCellNum, prevBuff);
-			else aliveNeighboursNum++;
-
+		if(iStatus != midCell){
+			//TODO deal with neighbours
+			continue;
 		};
+	
 
-		// the case when the cell survives 
-		if(aliveNeighboursNum == 2 || aliveNeighboursNum == 3) updatingChunk->aliveCells[nextTurnCellNum++] = currentIndex,nextTurnCellNum++;
+		int iNeighboursSize = 8;
+		int iNeighbours[8];
+		getNeighbours(index, iNeighbours);
 
-	};
-
-	//check the dead Neighbours and turn on
-
-	for(int i = 0 ; i < deadCellNum ;i++){
-		int currentIndex = deadCells[i];	
-
+		int aliveNeighbours[8] = {noCell};
 		int aliveNeighboursNum = 0;
 
-		for(int j = 0 ; j < sizeof(directions); j++)
-			if(hasIndex(updatingChunk, calculateNeighbourIndex(currentIndex , directions[j]) , prevBuff)) aliveNeighboursNum++;
-
-		if(aliveNeighboursNum == 3){
-			toggleCell(updatingChunk , currentIndex , absoluteOn);
-			nextTurnCellNum++;
+		// check alive neighbours
+		for(int j = 0; j < 8; j++ ){
+			if(hasIndex(updatingChunk, iNeighbours[j] ) )aliveNeighbours[aliveNeighboursNum++] = iNeighbours[j];
 		};
+
+
+		// grab all pervious overlapping cells and check the overlaps 
+		for(int j = i ; j > 0 ; j--){
+			int compIndex = updatingChunk->aliveCells[j];
+			int iDif = index - compIndex;
+			if(( iDif >= 2*chunkLength-2 && iDif <= 2*chunkLength+2) || (iDif >= chunkLength- 2 && iDif <= chunkLength + 2) || iDif == 2 || iDif == 1){
+				int compNeighbours[8];
+				getNeighbours(compIndex, compNeighbours);
+				subtractOverlap(iNeighbours, &iNeighboursSize, compNeighbours , 8);
+				continue;
+			};
+			if(iDif > 2*chunkLength - 3) break;
+		};
+
+		subtractOverlap(iNeighbours,&iNeighboursSize, aliveNeighbours, aliveNeighboursNum);
+
+		if(aliveNeighboursNum == 2 || aliveNeighboursNum == 3){
+			updatingChunk->nextTurn[nextBuffCellNum++] = index;
+		};
+
+		printf("%d	%d	%d\n",index,aliveNeighboursNum,nextBuffCellNum);
+
+		for(int j = 0 ; j < iNeighboursSize; j++){
+			printf("%d \t",iNeighbours[j]);
+		};
+		printf("\n");
 	};
 
-	updatingChunk->numOfCells = nextTurnCellNum;
+
+
+
+
+	unsigned short* tmp = updatingChunk->nextTurn;
+	updatingChunk->nextTurn = updatingChunk->aliveCells;
+	updatingChunk->aliveCells = updatingChunk->nextTurn;
+	
+	updatingChunk->numOfCells = nextBuffCellNum;
+	updatingChunk->updated = true;
+
 };
 // standard binary search algorithm
 int findIndex(chunk* c, int index,int buffOption){
 
 	unsigned short* buffer;
 
+//	printChunk(c);
+
+
 	switch(buffOption){
-		case prevBuff:
-			buffer = c->prevTurn;
+		case nextBuff:
+			buffer = c->nextTurn;
 		default:
 			buffer = c->aliveCells;
 	};
@@ -124,10 +141,13 @@ int findIndex(chunk* c, int index,int buffOption){
 
 		int currentIndex = (lowerIndex + upperIndex)/2;
 
+//		printf("current search index = %hu \n",buffer[currentIndex]);
+
 		if(buffer[currentIndex] == index) return currentIndex;
 		else if( index > buffer[currentIndex]) lowerIndex = currentIndex + 1;
 		else upperIndex = currentIndex - 1;
 	};
+
 
 	return indexNotFound;
 };
@@ -180,22 +200,8 @@ turnOff:
 	return;
 };
 
-inline bool hasIndex(chunk *c ,int index , int option){
-
-	int slot = hash(index , index) % indexLookUpSize;
-
-	int qIndex = savedIndexes[slot];
-
-	if(qIndex != noCell){
-		if(qIndex == index) return true;
-		return (findIndex(c , index , option) != indexNotFound);
-	};
-
-	if(findIndex(c , index , option) != indexNotFound){
-		savedIndexes[slot] = index;
-		return true;
-	};
-	return false;
+bool hasIndex(chunk *c ,int index){
+	return (findIndex(c,index, currBuff) != indexNotFound);
 };
 
 bool trimChunk(cordentry* entry){
@@ -208,7 +214,7 @@ bool trimChunk(cordentry* entry){
 	if(checkedChunk->numOfCells == underCapLimit){
 		checkedChunk->cellArrSize /= 2;
 		checkedChunk->aliveCells = realloc((void*)checkedChunk->aliveCells, checkedChunk->cellArrSize * sizeof(unsigned short)); 
-		checkedChunk->prevTurn = realloc((void*)checkedChunk->prevTurn, checkedChunk->cellArrSize * sizeof(unsigned short));
+		checkedChunk->nextTurn = realloc((void*)checkedChunk->nextTurn, checkedChunk->cellArrSize * sizeof(unsigned short));
 
 		checkedChunk->underCapTurnNum = 0 ; 
 		return true; 
@@ -230,15 +236,90 @@ bool trimChunk(cordentry* entry){
 	return true; 
 };
 
-void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff ,int* buffPos, int option){
+void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff , int* buffPos, int option){
+
+	printf("dead cell check \n");
 
 	int neighbours[8] = {upperLeft , upper, upperRight , left , right , lowerLeft , lower , lowerRight}; 
 
 	for(int i = 0 ; i < 8 ; i++){
 		int currentNeighbour = calculateNeighbourIndex(neighbours[i], index);
 		if( currentNeighbour < 0) continue;
-		if( currentNeighbour < comparisonIndex && hasIndex(c,neighbours[i], option)) return;
+		if( currentNeighbour < comparisonIndex && hasIndex(c,currentNeighbour))continue;
+		buff[*buffPos++] = (unsigned short)index;
+		return;
 	};
-	buff[*buffPos++] = index;
 	return;
+};
+
+int indexStatus(int index){
+
+	if(index == 0 ) return upperLeft ;
+	if(index == chunkLength - 1) return upperRight;
+	if(index == chunkLength*chunkLength - chunkLength) return lowerLeft;
+	if(index == chunkLength*chunkLength) return lowerRight;
+
+	if(index < chunkLength - 1) return upper;
+	if(index > chunkLength*chunkLength - chunkLength) return lower;
+
+	if(index % chunkLength == 0) return left;
+	if(index % chunkLength == chunkLength - 1) return right;
+
+	return midCell;
+};
+
+void getNeighbours(int index, int* buffer){
+	buffer[upperLeft] = calculateNeighbourIndex(index, upperLeft);
+	buffer[upper] = calculateNeighbourIndex(index, upper);
+	buffer[upperRight] = calculateNeighbourIndex(index, upperRight);
+	buffer[left] = calculateNeighbourIndex(index, left);
+	buffer[right] = calculateNeighbourIndex(index,right);
+	buffer[lowerLeft] = calculateNeighbourIndex(index, lowerLeft);
+	buffer[lower] = calculateNeighbourIndex(index, lower);
+	buffer[lowerRight] = calculateNeighbourIndex(index, lowerRight);
+};
+
+int calculateNeighbourIndex(int index , int dir){
+
+	switch(dir){
+		case upperLeft:
+			return index - chunkLength - 1;
+		case upper:
+			return index - chunkLength;
+		case upperRight:
+			return index - chunkLength + 1;
+		case left:
+			return index - 1;
+		case right:
+			return index + 1;
+		case lowerLeft:
+			return index + chunkLength - 1;
+		case lowerRight:
+			return index + chunkLength + 1;
+		case lower:
+			return index + chunkLength;
+		default:
+			return index;
+	};
+};
+
+void subtractOverlap(int* iNeighbours,int *neighbourSize, int* dif, int diffSize){
+
+	int res[8] = {noCell};
+	int resCount = 0;
+
+	for(int i = 0 ; i < *neighbourSize ; i++){
+		bool passed = true;
+		for(int j = 0; j < diffSize ; j++){
+			if(iNeighbours[i] == dif[j]){
+				passed = false;
+				break;
+			};
+		};
+		if(passed) res[resCount++] = iNeighbours[i];
+	};
+
+
+	for(int i = 0 ; i < resCount; i++) iNeighbours[i] = res[i];
+	*neighbourSize = resCount;
 };

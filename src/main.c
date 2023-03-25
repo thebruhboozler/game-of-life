@@ -76,7 +76,7 @@ void window_size_callback(GLFWwindow* window, int width, int height){
 void* runGame(void* arg){
 
 	while(1){
-		usleep(turnPerSec);
+		usleep(1000000);
 		playTurn();
 	};
 };
