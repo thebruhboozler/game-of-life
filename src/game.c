@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
 
 
 extern cordentry* hashTable[hashSize];
@@ -19,13 +18,13 @@ void playTurn();
 void updateChunk(cordentry* checkedChunk);
 void toggleCell(chunk* c,int index, int action);
 int findIndex(chunk* c, int index, int buffOption);
-void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff , int* buffPos, int option);
 bool hasIndex(chunk *c , int index);
 bool trimChunk(cordentry* entry);
 int indexStatus(int index);
 void getNeighbours(int index, int* buffer);
 int calculateNeighbourIndex(int index , int dir);
 void subtractOverlap(int* iNeighbours,int *neighbourSize, int* dif, int diffSize);
+bool hashTableInsert(int* hashTable,int num);
 
 
 void playTurn(){
@@ -54,6 +53,10 @@ void updateChunk(cordentry* checkedChunk){
 	int nextBuffCellNum = 0;
 
 
+	static int deadCellIndex[chunkHashSize];
+	for(int i = 0 ; i < chunkHashSize; i++) deadCellIndex[i] = noCell;
+	static int deadCells[chunkHashSize];
+	int deadCellNum = 0;
 
 	//go through the alive cells and update them 
 	
@@ -66,8 +69,6 @@ void updateChunk(cordentry* checkedChunk){
 			//TODO deal with neighbours
 			continue;
 		};
-	
-
 		int iNeighboursSize = 8;
 		int iNeighbours[8];
 		getNeighbours(index, iNeighbours);
@@ -80,38 +81,27 @@ void updateChunk(cordentry* checkedChunk){
 			if(hasIndex(updatingChunk, iNeighbours[j] ) )aliveNeighbours[aliveNeighboursNum++] = iNeighbours[j];
 		};
 
+		subtractOverlap(iNeighbours,&iNeighboursSize, aliveNeighbours, aliveNeighboursNum);
 
-		// grab all pervious overlapping cells and check the overlaps 
-		for(int j = i ; j > 0 ; j--){
-			int compIndex = updatingChunk->aliveCells[j];
-			int iDif = index - compIndex;
-			if(( iDif >= 2*chunkLength-2 && iDif <= 2*chunkLength+2) || (iDif >= chunkLength- 2 && iDif <= chunkLength + 2) || iDif == 2 || iDif == 1){
-				int compNeighbours[8];
-				getNeighbours(compIndex, compNeighbours);
-				subtractOverlap(iNeighbours, &iNeighboursSize, compNeighbours , 8);
-				continue;
-			};
-			if(iDif > 2*chunkLength - 3) break;
+		for(int i = 0 ; i < iNeighboursSize ; i++){
+			if(hashTableInsert(deadCellIndex,iNeighbours[i])) deadCells[deadCellNum++] = iNeighbours[i];
 		};
 
-		subtractOverlap(iNeighbours,&iNeighboursSize, aliveNeighbours, aliveNeighboursNum);
 
 		if(aliveNeighboursNum == 2 || aliveNeighboursNum == 3){
 			updatingChunk->nextTurn[nextBuffCellNum++] = index;
 		};
 
-		printf("%d	%d	%d\n",index,aliveNeighboursNum,nextBuffCellNum);
-
-		for(int j = 0 ; j < iNeighboursSize; j++){
-			printf("%d \t",iNeighbours[j]);
-		};
-		printf("\n");
 	};
 
 
-
-
-
+	for(int i = 0 ; i < deadCellNum; i++){
+		int neighbours[8];
+		int aliveNeighboursNum = 0;
+		getNeighbours(deadCells[i],neighbours);
+		for(int j = 0 ; j < 8 ; j++) if(hasIndex(updatingChunk,neighbours[j])) aliveNeighboursNum++;
+		if(aliveNeighboursNum == 3) updatingChunk->nextTurn[nextBuffCellNum++] = deadCells[i];
+	};
 	unsigned short* tmp = updatingChunk->nextTurn;
 	updatingChunk->nextTurn = updatingChunk->aliveCells;
 	updatingChunk->aliveCells = updatingChunk->nextTurn;
@@ -125,9 +115,6 @@ int findIndex(chunk* c, int index,int buffOption){
 
 	unsigned short* buffer;
 
-//	printChunk(c);
-
-
 	switch(buffOption){
 		case nextBuff:
 			buffer = c->nextTurn;
@@ -140,8 +127,6 @@ int findIndex(chunk* c, int index,int buffOption){
 	while(lowerIndex <= upperIndex){
 
 		int currentIndex = (lowerIndex + upperIndex)/2;
-
-//		printf("current search index = %hu \n",buffer[currentIndex]);
 
 		if(buffer[currentIndex] == index) return currentIndex;
 		else if( index > buffer[currentIndex]) lowerIndex = currentIndex + 1;
@@ -236,22 +221,6 @@ bool trimChunk(cordentry* entry){
 	return true; 
 };
 
-void moveIndexToBuff(int index, int comparisonIndex , chunk* c , unsigned short* buff , int* buffPos, int option){
-
-	printf("dead cell check \n");
-
-	int neighbours[8] = {upperLeft , upper, upperRight , left , right , lowerLeft , lower , lowerRight}; 
-
-	for(int i = 0 ; i < 8 ; i++){
-		int currentNeighbour = calculateNeighbourIndex(neighbours[i], index);
-		if( currentNeighbour < 0) continue;
-		if( currentNeighbour < comparisonIndex && hasIndex(c,currentNeighbour))continue;
-		buff[*buffPos++] = (unsigned short)index;
-		return;
-	};
-	return;
-};
-
 int indexStatus(int index){
 
 	if(index == 0 ) return upperLeft ;
@@ -308,18 +277,30 @@ void subtractOverlap(int* iNeighbours,int *neighbourSize, int* dif, int diffSize
 	int res[8] = {noCell};
 	int resCount = 0;
 
-	for(int i = 0 ; i < *neighbourSize ; i++){
-		bool passed = true;
-		for(int j = 0; j < diffSize ; j++){
-			if(iNeighbours[i] == dif[j]){
-				passed = false;
-				break;
-			};
-		};
-		if(passed) res[resCount++] = iNeighbours[i];
+	for(int i = 0; i < *neighbourSize;i++) res[i] = iNeighbours[i];
+
+
+	for(int i = 0 ; i < diffSize ; i++){
+		for(int j = 0 ; j < 8;j++)
+			if(res[j] == dif[i]) res[j] = noCell;
 	};
 
-
-	for(int i = 0 ; i < resCount; i++) iNeighbours[i] = res[i];
+	for(int i = 0 ; i < 8; i++) if(res[i] != noCell) iNeighbours[resCount++] = res[i];
 	*neighbourSize = resCount;
+};
+
+
+bool hashTableInsert(int* hashTable,int num){
+    
+    int slot = hash(num,num) % chunkHashSize;
+
+    while(hashTable[slot] != num){
+        if(hashTable[slot] == noCell){
+            hashTable[slot] = num;
+            return true;
+        }
+        slot++;
+        if(slot > chunkHashSize) slot = 0;
+    };
+    return false;
 };

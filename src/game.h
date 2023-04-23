@@ -22,6 +22,8 @@
 #define nextBuff 0
 #define currBuff 1
 
+#define chunkHashSize ((chunkLength*chunkLength)/2)
+
 
 void playTurn();
 void toggleCell(chunk* c,int index, int action);
