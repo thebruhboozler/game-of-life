@@ -3,21 +3,21 @@
 
 #include <stdbool.h>
 
-#define chunkSize 10000
-
 #define startingChunkSize 256
 
-#define chunkLength 100
+#define chunkLength 256 
+
+#define chunkSize chunkLength* chunkLength
 
 #define noNeighbour NULL
 
 #define hashSize 1024
 
 typedef struct chunk{
-	int x,y,numOfCells,cellArrSize,lastUpdated,lastUpSized;
-	bool upSized;
+	int x,y,numOfCells,cellArrSize,underCapTurnNum,inactiveTurnNum;
 	unsigned short* aliveCells;
-	unsigned short* prevTurn;
+	bool updated;
+	unsigned short* nextTurn;
 	struct chunk* neighbours[8];
 }chunk;
 
@@ -30,9 +30,9 @@ typedef struct cordentry{
 
 
 chunk* findCordChunk(int x, int y);
+void handleClicks(int x ,int y);
 chunk** getVisableChunks(int* len);
 chunk* createChunk(int x,int y);
-void handleClicks(int x ,int y);
 void deleteChunk(cordentry* e);
 void enterCord(chunk* c);
 

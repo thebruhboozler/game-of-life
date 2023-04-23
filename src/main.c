@@ -4,8 +4,11 @@
 #include "game.h"
 #include "include/gtk.h"
 
+#include <pthread.h>
+#include <unistd.h>
 
-#define null NULL
+
+#define turnPerSec 1000/5
 
 
 int windowW = 750;
@@ -13,12 +16,12 @@ int windowH = 750;
 int cameraX = 0;
 int cameraY = 0;
 int squareSize = 10;
-extern int seed; 
 GLFWwindow* window;
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void window_size_callback(GLFWwindow* window, int width, int height);
+void* runGame(void* arg);
 
 
 int main(int argc,char** argv){
@@ -31,7 +34,7 @@ int main(int argc,char** argv){
 
 	menuInit(); // intilise the menu
 
-	window = glfwCreateWindow(windowW, windowH, "GameOfLife", null, null);
+	window = glfwCreateWindow(windowW, windowH, "GameOfLife",NULL, NULL);
 
 	if (!window){
 		glfwTerminate();
@@ -43,6 +46,10 @@ int main(int argc,char** argv){
 	glfwSetFramebufferSizeCallback(window,framebuffer_size_callback);
 	glfwSetWindowSizeCallback(window,window_size_callback);
 	setControls(window);
+
+	pthread_t gameLoop;
+
+	pthread_create(&gameLoop, NULL, runGame , NULL);
 
 	while (!glfwWindowShouldClose(window)){
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -64,4 +71,12 @@ void window_size_callback(GLFWwindow* window, int width, int height){
 	glfwGetWindowSize(window,&width,&height);
 	windowW = width;
 	windowH = height;
+};
+
+void* runGame(void* arg){
+
+	while(1){
+		usleep(1000000);
+		playTurn();
+	};
 };

@@ -6,7 +6,7 @@ John Conway's Game Of Life( https://en.wikipedia.org/wiki/Conway%27s_Game_of_Lif
 **general info**
 
 
-The grid is infinite , but sections of it are managed by a chunk system.  Each chunk has a x and y coordinate on the grid and their size is 100 by 100.
+The grid is infinite , but sections of it are managed by a chunk system.  Each chunk has a x and y coordinate on the grid and their size is 256 by 256.
 In order to conserve memory the chunks also have an array of numbers which are the indexes of the cell which are alive within their bounds , instead of storing a 2d array . In addition , chunks which have no currently alive cells within their bounds are deleted.
 The indexes can be mapped mathematically to x and y coordinates.
 

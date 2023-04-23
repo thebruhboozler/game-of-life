@@ -44,9 +44,15 @@ void display(){
 	drawCells();
 	drawWaypoints();
 
-	drawText(generateCoordinateString(),30,30,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);   // Drawwing the coordinates and turns to the screen
-	drawText(generateTurnNumString(),30,55,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);
+	char* cords = generateCoordinateString();
+	char* turnNum = generateTurnNumString();
+
+	drawText(cords,30,30,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);   // Drawwing the coordinates and turns to the screen
+	drawText(turnNum,30,55,0.1,0.9,0.1,GLUT_BITMAP_TIMES_ROMAN_24);
 	
+	free((void*)cords);
+	free((void*)turnNum);
+
 	if(rightClicked) drawMenu(menuX,menuY); // drawing the menu if right clicked
 
 	if(helpClicked){
@@ -81,8 +87,8 @@ void drawCells(){
 		for(int j = 0; j < visableChunk->numOfCells; j++){
 			int cellIndex = visableChunk->aliveCells[j];    // get the index of a cell
 
-			int scx = cellIndex % chunkLength;  // get the x position of the cell with respect to squareSize 
 			int scy = (int)(roundUp(cellIndex,chunkLength)-chunkLength)/chunkLength;    // get the y position
+			int scx = (cellIndex - ((scy - 1) * chunkLength)) % (chunkLength + 1);  // get the x position of the cell with respect to squareSize 
 
 			int pcx = sx + squareSize * scx;    // get their on screen cordinates in pixels
 			int pcy = sy - squareSize * scy;
@@ -153,24 +159,21 @@ void drawMenu(int x,int y){ // draws menu when you right click
 	float lcx = (x+menuSize) - windowW/2; // translate right x positon
 	lcx = 2*lcx/windowW;
 
-	float r = 0,g = 0,b = 0;
+	float r,g,b;
 
 	for(int i = 0 ; i < menuOptionsNum;i++){
 
+
+		r = g = b = 0;
+
 		if(xpos > x && xpos < x + menuSize && ypos > y && ypos  < y +menuSlotSize){
 			glColor3f(0.1,0.1,0.8);
-			r = 0.8;
-			g = 0.1;
-			b = 0.1;
+			r = 0.8 , g = 0.1 , b = 0.1;
 			drawSquare(x,y + 2,menuSize,menuSlotSize + 1);
-			glColor3f(1.0,1.0,1.0);
 		};
 
 		drawText(menuOptionsTxt[i],x+2,y + menuSlotSize,r,g,b,GLUT_BITMAP_9_BY_15);
-
-		r = 0;
-		g = 0;
-		b = 0;
+		glColor3f(1.0,1.0,1.0);
 
 		y+=menuSlotSize;    // move down the text
 

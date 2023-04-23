@@ -59,6 +59,7 @@ void import(void){
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 	filename = gtk_file_chooser_get_filename (chooser);
 	imported = fopen(filename,"r");
+	free(filename);
 	gtk_widget_destroy (dialog);
 };
 
@@ -118,15 +119,17 @@ void importStructure(int x , int y){
 		int globalCellCordY = gsy - cellCordY;
 
 		int targetX ,targetY;
-
 		calcChunkCord( globalCellCordX , globalCellCordY , &targetX , &targetY);
-	
+
+		//if its the first time in the loop find the chunk	
 		if(!tmpInitialized) tmpInitialized = true, tmp = findCordChunk( targetX , targetY);
 
+		// if the calculated coordinates from index are different from the cooridnates of the chunk currently loaded
+		// then find the new chunk
 		if(tmp != NULL && (tmp->x != targetX || tmp->y != targetY)) tmp = findCordChunk( targetX , targetY);
 
+		// if there is no chunk create one 
 		if(tmp == NULL){
-			//createChunk
 			tmp = createChunk(targetX, targetY);
 			enterCord(tmp);
 		};
@@ -250,7 +253,6 @@ void createFile(int startX,int startY, int endX, int endY){
 	fclose(fp);
 };
 
-
 void clearAll(void){
 
 	GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
@@ -276,7 +278,7 @@ void clearAll(void){
 		do{
 			cordentry* tmp = e -> prev;
 			free(e->segment->aliveCells);
-			free(e->segment->prevTurn);
+			free(e->segment->nextTurn);
 			free(e->segment);
 			free(e);
 			e = tmp;

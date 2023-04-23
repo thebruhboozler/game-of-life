@@ -35,14 +35,17 @@ chunk* createChunk(int x,int y){
 	chunk* tmp = (chunk*) calloc(sizeof(chunk),1);  // alloacte chunk on the heap
 
 	tmp->aliveCells = (unsigned short*) calloc(sizeof(unsigned short),startingChunkSize);
-	tmp->prevTurn = (unsigned short*) calloc(sizeof(unsigned short), startingChunkSize);
+	tmp->nextTurn = (unsigned short*) calloc(sizeof(unsigned short), startingChunkSize);
 
 	tmp->x = x;
 	tmp->y = y;
-	tmp->upSized = false;
 	tmp->numOfCells = 0;
-	tmp->lastUpSized = 0;
+	tmp->underCapTurnNum = 0;
+	tmp->inactiveTurnNum = 0;
 	tmp->cellArrSize = startingChunkSize;   //set parameters
+	tmp->updated = false;
+
+
 
 	for(int i = 0; i < 8; i++) tmp->neighbours[i] = noNeighbour;  // by default no neigbours
 
@@ -111,6 +114,8 @@ chunk** getVisableChunks(int* len){
 
 	*len = chunkCount;  //set len
 
+	if(*len == 0) return NULL;
+
 	chunk** result = calloc(sizeof(chunk*),*len);
 
 	for(int i = 0 ; i < *len;i++) result[i] = tmp[i];   // copy results
@@ -126,6 +131,7 @@ void handleClicks(int x ,int y){
 	globalPcordsToScords( sx , sy , &squareX , &squareY);
 	int targetX,targetY;
 	calcChunkCord( squareX , squareY , &targetX , &targetY);
+
 
 	int ix = squareX - targetX;
 	int iy = targetY - squareY;
@@ -204,8 +210,16 @@ void deleteEntry(int x, int y){
 		hashTable[slot] = temp->next; 
 	};
 
+	// check neighbour conections 
+
+//	for(int i = 0; i < 8 ; i++)
+//		if(temp->segment->neighbours[i] != NULL) temp->segment->neighbours[i]->neighbours[7-i] = NULL;
+
+
+
 	free(temp->segment->aliveCells);
-	free(temp->segment->prevTurn);
+	printf("%p \n",temp->segment->nextTurn);
+	free(temp->segment->nextTurn);
 	free(temp->segment);
 	free(temp);
 };

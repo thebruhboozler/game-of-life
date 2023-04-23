@@ -17,7 +17,9 @@ void globalPcordsToScords(int gpx , int gpy , int* gsx , int *gsy); // converts 
 void screenToGlobaPixelCords(int x , int y, int* gx , int * gy); // take the coords from screen space and converts them to global space
 unsigned int hash(int x, int y); 
 static inline unsigned int advanceNum(unsigned int  seed);
+int calculateNeighbourIndex(int index , int dir);
 void calcChunkCord(int gsx , int gsy , int* gcx , int* gcy);
+void printChunk(chunk *c);
 
 
 float roundUp(int numToRound, int multiple){    //rounds to the nearest multipe of a number
@@ -84,4 +86,16 @@ void calcChunkCord(int gsx , int gsy , int* gcx , int* gcy){
 	*gcx = roundUp(gsx , chunkLength) - chunkLength;  	
 	*gcy = roundUp(gsy , chunkLength);
 
+};
+
+void printChunk(chunk *c){
+
+
+	printf("chunk: %p\n",c);
+	printf("chunkSize %d \n",c->numOfCells);
+	
+	printf("chunk Members ");
+
+	for(int i = 0; i <= c->numOfCells;i++) printf("%d ",c->aliveCells[i]);
+	printf("\n");
 };

@@ -12,13 +12,21 @@
 #define absoluteOff 2
 
 #define indexNotFound (chunkLength*chunkLength) + 1
-#define upSizeLimit 5
-#define deadChunkLimit 5
+#define underCapLimit 5
+#define emptyTurnLimit 5
+
+#define indexLookUpSize 128
+#define noCell -1
+#define midCell 10
+
+#define nextBuff 0
+#define currBuff 1
+
+#define chunkHashSize ((chunkLength*chunkLength)/2)
 
 
 void playTurn();
 void toggleCell(chunk* c,int index, int action);
-
 
 
 
